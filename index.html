@@ -301,7 +301,8 @@ a { color: var(--accent); text-decoration: none; }
 
 <!-- Config Screen -->
 <div class="config-screen" id="config-screen" style="display:none">
-  <div class="config-card">
+  <div class="config-card" style="position:relative">
+    <button onclick="closeConfig()" style="position:absolute;top:0;right:0;background:none;border:none;color:var(--text3);font-size:18px;cursor:pointer;padding:4px;line-height:1" title="关闭">✕</button>
     <div class="config-title">内容工作台</div>
     <div class="config-sub">填入你的 Supabase 项目信息开始使用。<br>信息保存在本地，不会上传到任何地方。</div>
     <div class="config-step">① Supabase Project URL</div>
@@ -458,6 +459,7 @@ function showConfig(err = '') {
   if (err) document.getElementById('cfg-err').innerHTML = `<div class="err">${esc(err)}</div>`;
 }
 function openConfig() { showConfig(); }
+function closeConfig() { document.getElementById('config-screen').style.display = 'none'; }
 async function saveConfig() {
   const url = document.getElementById('cfg-url').value.trim();
   const key = document.getElementById('cfg-key').value.trim();
