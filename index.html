@@ -145,7 +145,7 @@ a { color: var(--accent); text-decoration: none; }
   transition: border-color .15s, transform .15s; position: relative;
 }
 .card:hover { border-color: var(--border2); transform: translateY(-1px); }
-.card-img { width: 100%; aspect-ratio: 3/4; object-fit: cover; display: block; background: var(--bg3); }
+.card-img { width: 100%; max-height: 320px; object-fit: contain; display: block; background: var(--bg3); }
 .card-noimg {
   width: 100%; aspect-ratio: 3/4; background: var(--bg3);
   display: flex; align-items: center; justify-content: center;
@@ -158,6 +158,14 @@ a { color: var(--accent); text-decoration: none; }
   line-height: 1.5;
 }
 .card-date { font-size: 10px; color: var(--text3); margin-top: 5px; font-family: var(--mono); }
+
+/* ── Lightbox ── */
+.lightbox {
+  position: fixed; inset: 0; background: rgba(0,0,0,.92);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 500; cursor: zoom-out; padding: 20px;
+}
+.lightbox img { max-width: 100%; max-height: 90vh; object-fit: contain; border-radius: var(--radius); }
 
 /* ── Text rows ── */
 .trow {
@@ -610,7 +618,7 @@ function openGroup(sourceId) {
   const rep = grp.find(x => x.module === 'inspire') || grp[0];
   const getField = (module, field) => { const it = grp.find(x => x.module === module); return it ? it[field] : null; };
   const imgs = [...new Set(grp.filter(x => x.img_data).map(x => x.img_data))];
-  const imgHtml = imgs.map(src => `<img src="${src}" style="width:100%;max-height:180px;object-fit:cover;border-radius:var(--radius-sm);margin-bottom:8px">`).join('');
+  const imgHtml = imgs.map(src => `<img src="${src}" style="width:100%;max-height:400px;object-fit:contain;border-radius:var(--radius-sm);margin-bottom:8px;cursor:zoom-in;background:var(--bg3)" onclick="openLightbox('${src.replace(/'/g,"\\'")}'">`).join('');
   const f = [];
   const add = (l, v) => { if (v) f.push(`<div class="det-row"><div class="det-label">${l}</div><div class="det-val">${esc(v)}</div></div>`); };
   add('标题', rep.title); add('摘要', getField('inspire','note')); add('关键词', getField('inspire','keywords'));
@@ -901,6 +909,14 @@ async function addTag() {
 }
 
 // ── Utils ──
+function openLightbox(src) {
+  const lb = document.createElement('div');
+  lb.className = 'lightbox';
+  lb.innerHTML = `<img src="${src}">`;
+  lb.onclick = () => lb.remove();
+  document.body.appendChild(lb);
+}
+
 function setModal(html) {
   document.getElementById('modal-content').innerHTML = html;
   document.getElementById('modal').style.display = 'flex';
