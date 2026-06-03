@@ -513,12 +513,36 @@ function renderView() {
     v.innerHTML = `<div class="empty-state">
       <div class="how-card">
         <div class="how-title">如何使用</div>
-        <div class="how-step"><div class="step-num">1</div><div>把小红书帖子截图发给 Claude，说「分析这张截图，输出选题库 JSON」</div></div>
-        <div class="how-step"><div class="step-num">2</div><div>收到 JSON 分析结果后，点左侧「导入分析结果」粘贴进来</div></div>
-        <div class="how-step"><div class="step-num">3</div><div>内容自动分发到灵感、Hooks、标题库、CTA、文案公式等模块</div></div>
+        <div class="how-step"><div class="step-num">1</div><div>把小红书帖子截图发给 Claude，附上分析指令</div></div>
+        <div class="how-step"><div class="step-num">2</div><div>收到 JSON 后点左侧「导入分析结果」粘贴进来</div></div>
+        <div class="how-step"><div class="step-num">3</div><div>内容自动分发到各模块，全部视图按帖子分组显示</div></div>
       </div>
       <div class="empty-icon">暂无内容，开始导入吧</div>
     </div>`;
+    return;
+  }
+
+  // 全部视图：按 source_id 分组，每个帖子只显示一张卡
+  if (cur === 'all') {
+    const groups = {};
+    items.forEach(it => {
+      const key = it.source_id || it.id;
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(it);
+    });
+    const representatives = Object.values(groups).map(grp => {
+      // 优先取有图片的、模块为 inspire 的作为代表
+      return grp.find(x => x.img_data && x.module === 'inspire')
+          || grp.find(x => x.img_data)
+          || grp.find(x => x.module === 'inspire')
+          || grp[0];
+    });
+    const withImg = representatives.filter(it => it.img_data);
+    const noImg = representatives.filter(it => !it.img_data);
+    let html = '';
+    if (withImg.length) html += `<div class="grid">${withImg.map(it => renderCard(it, true)).join('')}</div>`;
+    if (noImg.length) html += `<div style="margin-top:${withImg.length ? '12px' : '0'}">${noImg.map(it => renderTrow(it, true)).join('')}</div>`;
+    v.innerHTML = html;
     return;
   }
 
@@ -527,32 +551,37 @@ function renderView() {
   const withImg = items.filter(it => it.img_data);
   const noImg = items.filter(it => !it.img_data);
   let html = '';
-  if (withImg.length) html += `<div class="grid">${withImg.map(renderCard).join('')}</div>`;
-  if (noImg.length) html += `<div style="margin-top:${withImg.length ? '12px' : '0'}">${noImg.map(renderTrow).join('')}</div>`;
+  if (withImg.length) html += `<div class="grid">${withImg.map(it => renderCard(it, false)).join('')}</div>`;
+  if (noImg.length) html += `<div style="margin-top:${withImg.length ? '12px' : '0'}">${noImg.map(it => renderTrow(it, false)).join('')}</div>`;
   v.innerHTML = html;
 }
 
-function renderCard(it) {
+function renderCard(it, isGroup) {
   const tagHtml = (it.tags || []).slice(0,2).map(t => `<span class="tag tag-custom">${esc(t)}</span>`).join('');
-  const modTag = `<span class="tag tag-mod">${LBL[it.module] || it.module}</span>`;
-  return `<div class="card" onclick="openDet('${it.id}')">
-    <button class="del-btn" onclick="event.stopPropagation();delItem('${it.id}')" aria-label="删除">✕</button>
+  const sourceId = it.source_id || it.id;
+  const clickFn = isGroup ? `openGroup('${sourceId}')` : `openDet('${it.id}')`;
+  const delFn = isGroup ? `delGroup('${sourceId}')` : `delItem('${it.id}')`;
+  return `<div class="card" onclick="${clickFn}">
+    <button class="del-btn" onclick="event.stopPropagation();${delFn}" aria-label="删除">✕</button>
     <img class="card-img" src="${it.img_data}" loading="lazy">
     <div class="card-body">
       <div class="card-title">${esc(it.title || '—')}</div>
-      <div class="tags">${modTag}${tagHtml}</div>
+      <div class="tags">${tagHtml}</div>
       <div class="card-date">${fmtDate(it.created_at)}</div>
     </div>
   </div>`;
 }
 
-function renderTrow(it) {
+function renderTrow(it, isGroup) {
   const main = it.title || it.hook || it.cta || it.question || it.formula_name || '—';
   const sub = it.note || it.emotion_why || it.answer || it.title_why || '';
-  const modTag = `<span class="tag tag-mod">${LBL[it.module] || it.module}</span>`;
+  const modTag = isGroup ? '' : `<span class="tag tag-mod">${LBL[it.module] || it.module}</span>`;
   const tagHtml = (it.tags || []).slice(0,2).map(t => `<span class="tag tag-custom">${esc(t)}</span>`).join('');
-  return `<div class="trow" onclick="openDet('${it.id}')">
-    <button class="del-btn" onclick="event.stopPropagation();delItem('${it.id}')" aria-label="删除">✕</button>
+  const sourceId = it.source_id || it.id;
+  const clickFn = isGroup ? `openGroup('${sourceId}')` : `openDet('${it.id}')`;
+  const delFn = isGroup ? `delGroup('${sourceId}')` : `delItem('${it.id}')`;
+  return `<div class="trow" onclick="${clickFn}">
+    <button class="del-btn" onclick="event.stopPropagation();${delFn}" aria-label="删除">✕</button>
     <div class="trow-main">${esc(main)}</div>
     ${sub ? `<div class="trow-sub">${esc(sub)}</div>` : ''}
     <div class="tags">${modTag}${tagHtml}</div>
@@ -568,6 +597,54 @@ function renderFB(it) {
     ${it.formula_ex ? `<div class="fb-example">示例：${esc(it.formula_ex)}</div>` : ''}
     <div class="tags" style="margin-top:6px">${tagHtml}</div>
   </div>`;
+}
+
+// ── Group detail (全部视图点开一张帖子) ──
+function openGroup(sourceId) {
+  const grp = allItems.filter(it => (it.source_id || it.id) === sourceId && it.mode === mode);
+  if (!grp.length) return;
+  const rep = grp.find(x => x.module === 'inspire') || grp[0];
+  const getField = (module, field) => { const it = grp.find(x => x.module === module); return it ? it[field] : null; };
+  const imgs = grp.filter(x => x.img_data).map(x => x.img_data);
+  const uniqueImgs = [...new Set(imgs)];
+  const imgHtml = uniqueImgs.map(src => `<img src="${src}" style="width:100%;max-height:180px;object-fit:cover;border-radius:var(--radius-sm);margin-bottom:8px">`).join('');
+  const f = [];
+  const add = (l, v) => { if (v) f.push(`<div class="det-row"><div class="det-label">${l}</div><div class="det-val">${esc(v)}</div></div>`); };
+  add('标题', rep.title);
+  add('摘要', getField('inspire','note'));
+  add('关键词', getField('inspire','keywords'));
+  add('Hook', getField('hooks','hook'));
+  add('情绪触发', getField('hooks','emotion'));
+  add('触发原因', getField('hooks','emotion_why'));
+  add('标题套路', getField('titles','title_pattern'));
+  add('套路分析', getField('titles','title_why'));
+  add('文案公式', getField('formulas','formula') || getField('breakdown','formula'));
+  add('公式示例', getField('formulas','formula_ex'));
+  add('CTA', getField('cta','cta'));
+  add('CTA 目标', getField('cta','cta_goal'));
+  add('适用场景', getField('cta','cta_scene'));
+  add('互动技巧', getField('breakdown','interaction'));
+  const tagHtml = (rep.tags || []).map(t => `<span class="tag tag-custom">${esc(t)}</span>`).join('');
+  setModal(`
+    <div class="modal-h">${esc(rep.title || '帖子详情')}</div>
+    ${imgHtml}
+    ${f.join('')}
+    <div class="tags" style="margin-top:8px">${tagHtml}</div>
+    <div style="font-size:11px;color:var(--text3);margin-top:10px;font-family:var(--mono)">${fmtDate(rep.created_at)}</div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="delGroup('${sourceId}');closeModal()">删除这个帖子</button>
+      <button class="btn-ok" onclick="closeModal()">关闭</button>
+    </div>
+  `);
+}
+
+async function delGroup(sourceId) {
+  if (!confirm('确认删除这个帖子的所有数据？')) return;
+  showLoading(true);
+  await sb.from('items').delete().eq('source_id', sourceId);
+  allItems = allItems.filter(it => (it.source_id || it.id) !== sourceId);
+  showLoading(false);
+  syncBadges(); renderView();
 }
 
 // ── Import: paste JSON from Claude ──
@@ -667,7 +744,8 @@ async function doSave() {
   const imgs = (window._iImgs || []).filter(Boolean);
   const firstImg = imgs[0] || null;
   const bt = o.tags || [];
-  const base = { mode, tags: bt, ...(firstImg ? { img_data: firstImg } : {}) };
+  const sourceId = 'src_' + Date.now();
+  const base = { mode, tags: bt, source_id: sourceId, ...(firstImg ? { img_data: firstImg } : {}) };
   const rows = [];
   rows.push({ ...base, module: 'inspire', title: o.title, note: o.summary, keywords: o.keywords });
   if (o.hook) rows.push({ ...base, module: 'hooks', hook: o.hook, emotion: o.emotion, emotion_why: o.emotionWhy || o.emotionAnalysis });
@@ -676,9 +754,8 @@ async function doSave() {
   rows.push({ ...base, module: 'breakdown', title: o.title, note: o.summary, formula: o.formula, emotion: o.emotion, interaction: o.interaction });
   if (o.formula) rows.push({ ...base, module: 'formulas', formula_name: o.formulaName || '文案公式', formula: o.formula, formula_ex: o.formulaEx || o.formulaExample });
   if (o.question) rows.push({ ...base, module: 'comments', question: o.question, freq: o.freq, answer: o.answer });
-  // 额外图片单独存入灵感模块
   for (let i = 1; i < imgs.length; i++) {
-    rows.push({ mode, tags: bt, img_data: imgs[i], module: 'inspire', title: o.title + ' (图' + (i+1) + ')', note: o.summary });
+    rows.push({ mode, tags: bt, source_id: sourceId, img_data: imgs[i], module: 'inspire', title: o.title + ' (图' + (i+1) + ')', note: o.summary });
   }
   showLoading(true);
   const { error } = await sb.from('items').insert(rows);
