@@ -398,7 +398,7 @@ a { color: var(--accent); text-decoration: none; }
 // ══════════════════════════════════════════
 const DEFAULT_URL = 'https://amfhicxwkzlxzxdltbam.supabase.co';
 const DEFAULT_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFtZmhpY3h3a3pseHp4ZGx0YmFtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA0MTY2NTUsImV4cCI6MjA5NTk5MjY1NX0.At7HapK-9nqeDhIb6h5c13-FMMfOY-xmev-NmcauxKc';
-const GEMINI_KEY = 'AIzaSyAQ.Ab8RN6JiBc_a3eyXfMboFBtulKZrfjacBpYv1X3c8kA3Xbbgrg';
+const GEMINI_KEY = 'AQ.Ab8RN6IXCPzbMrRqQwXjhrzHbm0E-GsmCAK9g97KklUq6fzw2w';
 const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`;
 // ══════════════════════════════════════════
 
@@ -636,9 +636,9 @@ async function runGemini(dataUrl, mimeType) {
 {"title":"帖子标题","summary":"正文摘要不超过50字","keywords":"3到5个关键词逗号分隔","hook":"最吸引人的开头句","emotion":"情绪触发类型如焦虑共鸣好奇惊喜羡慕","emotionWhy":"为什么有效1句话","titlePattern":"标题套路如数字型反差型痛点型疑问型利益型","titleWhy":"为什么是这个套路1句","formula":"文案结构公式用方括号标记模块","formulaName":"公式名称","formulaEx":"套用公式的新例子1句","cta":"CTA文案","ctaGoal":"目标行为","ctaScene":"适合场景","interaction":"互动引导技巧","tags":["标签1","标签2","标签3"]}`;
 
   try {
-    const resp = await fetch(GEMINI_URL, {
+    const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'x-goog-api-key': GEMINI_KEY },
       body: JSON.stringify({
         contents: [{ parts: [
           { inline_data: { mime_type: mimeType, data: b64 } },
