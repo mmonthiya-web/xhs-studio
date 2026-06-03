@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>内容工作台 · 小红书运营</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600&family=DM+Mono:wght@400;500&family=Noto+Sans+SC:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+/* ── CONFIG: 在这里填入你的 Supabase 信息 ── */
+/* 见 JS 部分 SUPABASE_URL / SUPABASE_KEY */
+
+:root {
+  --bg: #0f0e0d;
+  --bg2: #181714;
+  --bg3: #211f1c;
+  --border: #2e2b27;
+  --border2: #3d3a35;
+  --text: #f0ebe4;
+  --text2: #a09890;
+  --text3: #665f57;
+  --accent: #d4956a;
+  --accent2: #e8b48a;
+  --accent-bg: #2a1f15;
+  --purple: #9b8ec4;
+  --purple-bg: #1e1929;
+  --green: #7ab89a;
+  --green-bg: #142018;
+  --red: #c47a7a;
+  --red-bg: #221414;
+  --radius: 8px;
+  --radius-sm: 5px;
+  --mono: 'DM Mono', monospace;
+  --serif: 'Noto Serif SC', serif;
+  --sans: 'Noto Sans SC', sans-serif;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 14px; }
+body { background: var(--bg); color: var(--text); font-family: var(--sans); min-height: 100vh; overflow-x: hidden; }
+input, textarea, select, button { font-family: var(--sans); font-size: 13px; outline: none; }
+input, textarea {
+  background: var(--bg3); border: 1px solid var(--border); color: var(--text);
+  border-radius: var(--radius-sm); padding: 7px 10px; width: 100%;
+  transition: border-color .15s;
+}
+input:focus, textarea:focus { border-color: var(--accent); }
+button { cursor: pointer; border: none; border-radius: var(--radius-sm); transition: all .15s; }
+textarea { resize: vertical; min-height: 72px; line-height: 1.6; }
+a { color: var(--accent); text-decoration: none; }
+
+/* ── Layout ── */
+.shell { display: flex; height: 100vh; overflow: hidden; }
+
+/* ── Sidebar ── */
+.sidebar {
+  width: 188px; flex-shrink: 0; border-right: 1px solid var(--border);
+  background: var(--bg2); display: flex; flex-direction: column; overflow: hidden;
+}
+.sb-brand {
+  padding: 18px 16px 14px; border-bottom: 1px solid var(--border);
+}
+.sb-brand-name {
+  font-family: var(--serif); font-size: 15px; font-weight: 600;
+  color: var(--text); letter-spacing: .02em;
+}
+.sb-brand-sub { font-size: 11px; color: var(--text3); margin-top: 2px; }
+.mode-row { display: flex; gap: 5px; margin-top: 10px; }
+.mode-btn {
+  flex: 1; font-size: 11px; padding: 4px 0; border-radius: var(--radius-sm);
+  border: 1px solid var(--border2); background: transparent; color: var(--text2);
+  transition: all .15s;
+}
+.mode-btn.on { background: var(--accent); color: #1a1008; border-color: var(--accent); font-weight: 500; }
+.mode-tag {
+  display: inline-flex; align-items: center; gap: 4px; font-size: 10px;
+  padding: 2px 8px; border-radius: 999px; margin-top: 7px;
+  font-family: var(--mono);
+}
+.mode-tag.p { background: var(--green-bg); color: var(--green); }
+.mode-tag.t { background: var(--accent-bg); color: var(--accent); }
+
+.sb-section { font-size: 10px; color: var(--text3); padding: 12px 16px 3px; letter-spacing: .1em; text-transform: uppercase; font-family: var(--mono); }
+.nav-item {
+  display: flex; align-items: center; gap: 8px; padding: 7px 16px;
+  cursor: pointer; font-size: 13px; color: var(--text2);
+  border-left: 2px solid transparent; transition: all .12s;
+}
+.nav-item:hover { color: var(--text); background: var(--bg3); }
+.nav-item.on { color: var(--accent2); border-left-color: var(--accent); background: var(--bg3); font-weight: 500; }
+.nav-item .icon { font-size: 15px; flex-shrink: 0; }
+.nav-badge {
+  margin-left: auto; font-size: 10px; background: var(--bg);
+  color: var(--text3); padding: 1px 6px; border-radius: 999px;
+  min-width: 18px; text-align: center; font-family: var(--mono);
+}
+.sb-footer { margin-top: auto; padding: 10px; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 4px; }
+.sb-btn {
+  width: 100%; font-size: 11px; padding: 6px 8px; border-radius: var(--radius-sm);
+  border: 1px solid var(--border2); background: transparent; color: var(--text2);
+  display: flex; align-items: center; justify-content: center; gap: 5px;
+}
+.sb-btn:hover { border-color: var(--accent); color: var(--accent); }
+.sb-btn.primary { background: var(--accent); color: #1a1008; border-color: var(--accent); font-weight: 500; font-size: 12px; padding: 7px; }
+.sb-btn.primary:hover { background: var(--accent2); }
+
+/* ── Main ── */
+.main { flex: 1; min-width: 0; display: flex; flex-direction: column; overflow: hidden; }
+.topbar {
+  display: flex; align-items: center; gap: 8px; padding: 11px 16px;
+  border-bottom: 1px solid var(--border); flex-shrink: 0; background: var(--bg2);
+}
+.topbar-title { font-family: var(--serif); font-size: 16px; font-weight: 500; flex: 1; color: var(--text); }
+.topbar input { width: 160px; font-size: 13px; }
+.btn-import {
+  background: var(--accent); color: #1a1008; border: none;
+  padding: 6px 14px; border-radius: var(--radius-sm); font-size: 13px;
+  font-weight: 500; white-space: nowrap; display: flex; align-items: center; gap: 5px;
+}
+.btn-import:hover { background: var(--accent2); }
+
+.view { flex: 1; overflow: auto; padding: 16px; }
+
+/* ── Empty state ── */
+.empty-state { max-width: 480px; margin: 40px auto; }
+.how-card {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 20px; margin-bottom: 12px;
+}
+.how-title { font-family: var(--serif); font-size: 15px; font-weight: 500; margin-bottom: 12px; color: var(--text); }
+.how-step { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; color: var(--text2); font-size: 13px; line-height: 1.6; }
+.how-step:last-child { margin-bottom: 0; }
+.step-num {
+  width: 22px; height: 22px; border-radius: 50%; background: var(--accent-bg);
+  color: var(--accent); font-size: 11px; font-weight: 500; font-family: var(--mono);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px;
+}
+.empty-icon { text-align: center; padding: 32px; color: var(--text3); font-size: 13px; }
+
+/* ── Cards grid ── */
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; }
+.card {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--radius); overflow: hidden; cursor: pointer;
+  transition: border-color .15s, transform .15s; position: relative;
+}
+.card:hover { border-color: var(--border2); transform: translateY(-1px); }
+.card-img { width: 100%; aspect-ratio: 3/4; object-fit: cover; display: block; background: var(--bg3); }
+.card-noimg {
+  width: 100%; aspect-ratio: 3/4; background: var(--bg3);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 28px; color: var(--text3);
+}
+.card-body { padding: 10px 11px 12px; }
+.card-title {
+  font-size: 13px; font-weight: 400; color: var(--text); margin-bottom: 5px;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+  line-height: 1.5;
+}
+.card-date { font-size: 10px; color: var(--text3); margin-top: 5px; font-family: var(--mono); }
+
+/* ── Text rows ── */
+.trow {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 10px 13px; margin-bottom: 6px;
+  cursor: pointer; transition: border-color .15s; position: relative;
+}
+.trow:hover { border-color: var(--border2); }
+.trow-main { font-size: 13px; font-weight: 400; color: var(--text); margin-bottom: 3px; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+.trow-sub { font-size: 12px; color: var(--text2); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.55; }
+
+/* ── Formula blocks ── */
+.fb {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 13px; margin-bottom: 7px;
+  cursor: pointer; transition: border-color .15s; position: relative;
+}
+.fb:hover { border-color: var(--border2); }
+.fb-name { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 6px; }
+.fb-formula {
+  font-family: var(--mono); font-size: 12px; color: var(--accent);
+  background: var(--accent-bg); padding: 6px 10px; border-radius: var(--radius-sm);
+  line-height: 1.7; word-break: break-all;
+}
+.fb-example { font-size: 12px; color: var(--text2); margin-top: 5px; line-height: 1.5; }
+
+/* ── Tags ── */
+.tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+.tag { font-size: 10px; padding: 2px 7px; border-radius: 999px; font-family: var(--mono); }
+.tag-mod { background: var(--accent-bg); color: var(--accent); }
+.tag-custom { background: var(--purple-bg); color: var(--purple); }
+.tag-green { background: var(--green-bg); color: var(--green); }
+
+/* ── Del button ── */
+.del-btn {
+  position: absolute; top: 7px; right: 7px; width: 22px; height: 22px;
+  border-radius: 50%; background: rgba(0,0,0,.6); border: none;
+  color: #fff; font-size: 13px; display: none; align-items: center; justify-content: center;
+  z-index: 2;
+}
+.card:hover .del-btn, .trow:hover .del-btn, .fb:hover .del-btn { display: flex; }
+.del-btn:hover { background: var(--red); }
+
+/* ── Modal ── */
+.modal-mask {
+  position: fixed; inset: 0; background: rgba(0,0,0,.7);
+  display: flex; align-items: flex-start; justify-content: center;
+  padding: 24px 16px; z-index: 200; backdrop-filter: blur(3px);
+}
+.modal {
+  background: var(--bg2); border: 1px solid var(--border2);
+  border-radius: var(--radius); width: 100%; max-width: 520px;
+  padding: 20px; max-height: 88vh; overflow-y: auto;
+}
+.modal-h { font-family: var(--serif); font-size: 16px; font-weight: 500; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+.modal img.preview { width: 100%; max-height: 200px; object-fit: cover; border-radius: var(--radius-sm); margin-bottom: 13px; }
+.field-label { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: .08em; display: block; margin-top: 12px; margin-bottom: 4px; font-family: var(--mono); }
+.modal-actions { display: flex; gap: 8px; margin-top: 16px; justify-content: flex-end; }
+.btn-cancel { background: var(--bg3); color: var(--text2); border: 1px solid var(--border2); padding: 7px 16px; border-radius: var(--radius-sm); }
+.btn-cancel:hover { color: var(--text); }
+.btn-ok { background: var(--accent); color: #1a1008; padding: 7px 18px; border-radius: var(--radius-sm); font-weight: 500; }
+.btn-ok:hover { background: var(--accent2); }
+.btn-ok:disabled { opacity: .4; cursor: default; }
+.btn-preview { background: var(--bg3); color: var(--text2); border: 1px solid var(--border2); padding: 7px 14px; border-radius: var(--radius-sm); }
+.btn-preview:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ── Preview result box ── */
+.result-box {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 12px; margin-top: 10px;
+  font-size: 12px; line-height: 1.75; color: var(--text2);
+}
+.rb-row { margin-bottom: 7px; }
+.rb-row:last-child { margin-bottom: 0; }
+.rb-label { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: .08em; font-family: var(--mono); display: block; margin-bottom: 1px; }
+.rb-val { color: var(--text); }
+.rb-mono { font-family: var(--mono); font-size: 11px; color: var(--accent); background: var(--accent-bg); padding: 3px 8px; border-radius: 4px; display: inline-block; margin-top: 2px; line-height: 1.6; }
+
+/* ── Detail view ── */
+.det-row { margin-bottom: 10px; }
+.det-label { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: .08em; font-family: var(--mono); margin-bottom: 2px; }
+.det-val { font-size: 13px; color: var(--text); line-height: 1.65; }
+.det-formula { font-family: var(--mono); font-size: 12px; color: var(--accent); background: var(--accent-bg); padding: 7px 10px; border-radius: var(--radius-sm); line-height: 1.7; margin-bottom: 12px; word-break: break-all; }
+
+/* ── Img drop ── */
+.img-drop {
+  border: 1.5px dashed var(--border2); border-radius: var(--radius-sm);
+  padding: 14px; text-align: center; cursor: pointer;
+  transition: all .15s; margin-top: 8px; font-size: 13px; color: var(--text2);
+}
+.img-drop:hover, .img-drop.drag { border-color: var(--accent); background: var(--accent-bg); }
+.img-drop .di { font-size: 22px; display: block; margin-bottom: 4px; color: var(--text3); }
+
+/* ── Error / info ── */
+.err { background: var(--red-bg); color: var(--red); border-radius: var(--radius-sm); padding: 8px 11px; font-size: 12px; margin-top: 8px; }
+.info { background: var(--accent-bg); color: var(--accent); border-radius: var(--radius-sm); padding: 8px 11px; font-size: 12px; margin-top: 8px; }
+
+/* ── Config screen ── */
+.config-screen {
+  position: fixed; inset: 0; background: var(--bg);
+  display: flex; align-items: center; justify-content: center; z-index: 300; padding: 24px;
+}
+.config-card {
+  background: var(--bg2); border: 1px solid var(--border2);
+  border-radius: var(--radius); width: 100%; max-width: 440px; padding: 28px;
+}
+.config-title { font-family: var(--serif); font-size: 20px; font-weight: 600; margin-bottom: 4px; }
+.config-sub { font-size: 13px; color: var(--text2); margin-bottom: 20px; line-height: 1.6; }
+.config-step { font-size: 11px; color: var(--text3); font-family: var(--mono); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 4px; margin-top: 14px; }
+
+/* ── Loading ── */
+.spin { display: inline-block; width: 13px; height: 13px; border: 2px solid var(--border2); border-top-color: var(--accent); border-radius: 50%; animation: sp .7s linear infinite; vertical-align: -2px; margin-right: 5px; }
+@keyframes sp { to { transform: rotate(360deg); } }
+.loading-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.5); display: flex; align-items: center; justify-content: center; z-index: 400; }
+.loading-box { background: var(--bg2); border: 1px solid var(--border2); border-radius: var(--radius); padding: 20px 28px; font-size: 13px; color: var(--text2); display: flex; align-items: center; gap: 10px; }
+
+/* ── Tag manager ── */
+.tag-wrap { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0; }
+.tag-item { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--border2); font-size: 12px; color: var(--text2); }
+.tag-del { border: none; background: none; cursor: pointer; color: var(--text3); padding: 0; line-height: 1; font-size: 14px; }
+.tag-del:hover { color: var(--red); }
+.add-tag-row { display: flex; gap: 8px; margin-top: 8px; }
+
+/* ── Mobile ── */
+@media (max-width: 640px) {
+  .sidebar { width: 48px; }
+  .sidebar .sb-brand-name, .sidebar .sb-brand-sub, .sidebar .mode-row,
+  .sidebar .mode-tag, .sidebar .sb-section, .nav-item span,
+  .sidebar .sb-footer .sb-btn span { display: none; }
+  .nav-item { justify-content: center; padding: 10px; }
+  .nav-badge { display: none; }
+  .sb-footer { padding: 6px; }
+  .sb-btn { justify-content: center; }
+  .topbar input { width: 100px; }
+}
+</style>
+</head>
+<body>
+
+<!-- Config Screen -->
+<div class="config-screen" id="config-screen" style="display:none">
+  <div class="config-card">
+    <div class="config-title">内容工作台</div>
+    <div class="config-sub">填入你的 Supabase 项目信息开始使用。<br>信息保存在本地，不会上传到任何地方。</div>
+    <div class="config-step">① Supabase Project URL</div>
+    <input type="text" id="cfg-url" placeholder="https://xxxxxxxxxxxx.supabase.co">
+    <div class="config-step">② Supabase Anon Key</div>
+    <input type="text" id="cfg-key" placeholder="eyJhbGciOiJIUzI1NiIs...">
+    <div id="cfg-err"></div>
+    <div style="margin-top:16px;display:flex;gap:8px">
+      <button class="btn-ok" style="flex:1;padding:10px" onclick="saveConfig()">连接并开始</button>
+    </div>
+    <div style="font-size:11px;color:var(--text3);margin-top:12px;line-height:1.7">
+      在 Supabase Dashboard → Settings → API 里可以找到这两个值。<br>
+      还没建表？先在 SQL Editor 里运行 <code style="color:var(--accent)">schema.sql</code> 文件。
+    </div>
+  </div>
+</div>
+
+<!-- Loading -->
+<div class="loading-overlay" id="loading" style="display:none">
+  <div class="loading-box"><div class="spin"></div>加载中…</div>
+</div>
+
+<!-- Modal -->
+<div class="modal-mask" id="modal" style="display:none" onclick="handleMaskClick(event)">
+  <div class="modal" id="modal-content"></div>
+</div>
+
+<!-- Main Shell -->
+<div class="shell" id="shell" style="display:none">
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sb-brand">
+      <div class="sb-brand-name">内容工作台</div>
+      <div class="sb-brand-sub">小红书运营助手</div>
+      <div class="mode-row">
+        <button class="mode-btn on" id="btn-p" onclick="switchMode('personal')">👤 个人</button>
+        <button class="mode-btn" id="btn-t" onclick="switchMode('team')">👥 团队</button>
+      </div>
+      <div class="mode-tag p" id="mode-tag">🔒 仅自己可见</div>
+    </div>
+
+    <div class="sb-section">素材库</div>
+    <div class="nav-item on" id="ni-all" onclick="go('all')">
+      <span class="icon">⊞</span><span>全部</span><span class="nav-badge" id="b-all">0</span>
+    </div>
+    <div class="nav-item" id="ni-inspire" onclick="go('inspire')">
+      <span class="icon">💡</span><span>灵感</span><span class="nav-badge" id="b-inspire">0</span>
+    </div>
+    <div class="nav-item" id="ni-hooks" onclick="go('hooks')">
+      <span class="icon">🪝</span><span>Hooks</span><span class="nav-badge" id="b-hooks">0</span>
+    </div>
+    <div class="nav-item" id="ni-titles" onclick="go('titles')">
+      <span class="icon">T</span><span>标题库</span><span class="nav-badge" id="b-titles">0</span>
+    </div>
+    <div class="nav-item" id="ni-cta" onclick="go('cta')">
+      <span class="icon">☞</span><span>CTA</span><span class="nav-badge" id="b-cta">0</span>
+    </div>
+
+    <div class="sb-section">分析</div>
+    <div class="nav-item" id="ni-breakdown" onclick="go('breakdown')">
+      <span class="icon">🔬</span><span>爆款拆解</span><span class="nav-badge" id="b-breakdown">0</span>
+    </div>
+    <div class="nav-item" id="ni-formulas" onclick="go('formulas')">
+      <span class="icon">ƒ</span><span>文案公式</span><span class="nav-badge" id="b-formulas">0</span>
+    </div>
+    <div class="nav-item" id="ni-comments" onclick="go('comments')">
+      <span class="icon">💬</span><span>高频问题</span><span class="nav-badge" id="b-comments">0</span>
+    </div>
+
+    <div class="sb-footer">
+      <button class="sb-btn primary" onclick="openImport()">✦ 导入分析结果</button>
+      <button class="sb-btn" onclick="openTagMgr()"><span>🏷</span><span> 管理标签</span></button>
+      <button class="sb-btn" onclick="openConfig()"><span>⚙</span><span> 配置</span></button>
+    </div>
+  </div>
+
+  <!-- Main -->
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-title" id="view-title">全部</div>
+      <input type="text" id="sq" placeholder="搜索…" oninput="renderView()">
+      <button class="btn-import" onclick="openImport()">✦ 导入</button>
+    </div>
+    <div class="view" id="vw"></div>
+  </div>
+</div>
+
+<input type="file" id="hfi" accept="image/*" style="display:none">
+<input type="file" id="bfi" accept=".json" style="display:none">
+
+<script>
+// ══════════════════════════════════════════
+//  CONFIG — 填入你的 Supabase 信息
+//  或者留空，第一次打开会弹出配置界面
+// ══════════════════════════════════════════
+const DEFAULT_URL = '';   // 例: 'https://abc.supabase.co'
+const DEFAULT_KEY = '';   // 例: 'eyJhbGci...'
+
+// ══════════════════════════════════════════
+
+let sb = null;
+let mode = 'personal';
+let cur = 'all';
+let tags = [];
+let allItems = [];
+
+const MODULES = ['inspire','hooks','titles','cta','breakdown','formulas','comments'];
+const LBL = {all:'全部',inspire:'灵感',hooks:'Hooks',titles:'标题库',cta:'CTA',breakdown:'爆款拆解',formulas:'文案公式',comments:'高频问题'};
+const MOD_ICON = {inspire:'💡',hooks:'🪝',titles:'T',cta:'☞',breakdown:'🔬',formulas:'ƒ',comments:'💬'};
+
+// ── Init ──
+window.onload = async () => {
+  const url = localStorage.getItem('sb_url') || DEFAULT_URL;
+  const key = localStorage.getItem('sb_key') || DEFAULT_KEY;
+  if (!url || !key) { showConfig(); return; }
+  await initSupabase(url, key);
+};
+
+async function initSupabase(url, key) {
+  try {
+    sb = supabase.createClient(url, key);
+    showLoading(true);
+    await loadAll();
+    document.getElementById('shell').style.display = 'flex';
+    showLoading(false);
+  } catch(e) {
+    showLoading(false);
+    showConfig('连接失败：' + e.message);
+  }
+}
+
+async function loadAll() {
+  const [itemsRes, tagsRes] = await Promise.all([
+    sb.from('items').select('*').order('created_at', {ascending: false}),
+    sb.from('tags').select('*').order('name')
+  ]);
+  if (itemsRes.error) throw itemsRes.error;
+  allItems = itemsRes.data || [];
+  tags = (tagsRes.data || []).map(t => t.name);
+  syncBadges();
+  renderView();
+}
+
+// ── Config ──
+function showConfig(err = '') {
+  document.getElementById('config-screen').style.display = 'flex';
+  document.getElementById('shell').style.display = 'none';
+  const u = localStorage.getItem('sb_url') || DEFAULT_URL;
+  const k = localStorage.getItem('sb_key') || DEFAULT_KEY;
+  if (u) document.getElementById('cfg-url').value = u;
+  if (k) document.getElementById('cfg-key').value = k;
+  if (err) document.getElementById('cfg-err').innerHTML = `<div class="err">${esc(err)}</div>`;
+}
+function openConfig() { showConfig(); }
+async function saveConfig() {
+  const url = document.getElementById('cfg-url').value.trim();
+  const key = document.getElementById('cfg-key').value.trim();
+  if (!url || !key) { document.getElementById('cfg-err').innerHTML = '<div class="err">请填写 URL 和 Key</div>'; return; }
+  localStorage.setItem('sb_url', url);
+  localStorage.setItem('sb_key', key);
+  document.getElementById('config-screen').style.display = 'none';
+  await initSupabase(url, key);
+}
+
+// ── Mode ──
+function switchMode(m) {
+  mode = m;
+  document.getElementById('btn-p').classList.toggle('on', m === 'personal');
+  document.getElementById('btn-t').classList.toggle('on', m === 'team');
+  const tag = document.getElementById('mode-tag');
+  if (m === 'personal') { tag.className = 'mode-tag p'; tag.textContent = '🔒 仅自己可见'; }
+  else { tag.className = 'mode-tag t'; tag.textContent = '👥 团队共享'; }
+  syncBadges(); renderView();
+}
+
+function filteredItems() {
+  return allItems.filter(it => it.mode === mode);
+}
+
+// ── Nav ──
+function go(m) {
+  cur = m;
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('on'));
+  document.getElementById('ni-' + m).classList.add('on');
+  document.getElementById('view-title').textContent = LBL[m];
+  document.getElementById('sq').value = '';
+  renderView();
+}
+
+// ── Badges ──
+function syncBadges() {
+  const fi = filteredItems();
+  document.getElementById('b-all').textContent = fi.length;
+  MODULES.forEach(m => {
+    const el = document.getElementById('b-' + m);
+    if (el) el.textContent = fi.filter(it => it.module === m).length;
+  });
+}
+
+// ── Render ──
+function renderView() {
+  const q = (document.getElementById('sq').value || '').toLowerCase();
+  let items = filteredItems();
+  if (cur !== 'all') items = items.filter(it => it.module === cur);
+  if (q) items = items.filter(it => JSON.stringify(it).toLowerCase().includes(q));
+
+  const v = document.getElementById('vw');
+  if (!items.length) {
+    v.innerHTML = `<div class="empty-state">
+      <div class="how-card">
+        <div class="how-title">如何使用</div>
+        <div class="how-step"><div class="step-num">1</div><div>把小红书帖子截图发给 Claude，说「分析这张截图，输出选题库 JSON」</div></div>
+        <div class="how-step"><div class="step-num">2</div><div>收到 JSON 分析结果后，点左侧「导入分析结果」粘贴进来</div></div>
+        <div class="how-step"><div class="step-num">3</div><div>内容自动分发到灵感、Hooks、标题库、CTA、文案公式等模块</div></div>
+      </div>
+      <div class="empty-icon">暂无内容，开始导入吧</div>
+    </div>`;
+    return;
+  }
+
+  if (cur === 'formulas') { v.innerHTML = items.map(renderFB).join(''); return; }
+
+  const withImg = items.filter(it => it.img_data);
+  const noImg = items.filter(it => !it.img_data);
+  let html = '';
+  if (withImg.length) html += `<div class="grid">${withImg.map(renderCard).join('')}</div>`;
+  if (noImg.length) html += `<div style="margin-top:${withImg.length ? '12px' : '0'}">${noImg.map(renderTrow).join('')}</div>`;
+  v.innerHTML = html;
+}
+
+function renderCard(it) {
+  const tagHtml = (it.tags || []).slice(0,2).map(t => `<span class="tag tag-custom">${esc(t)}</span>`).join('');
+  const modTag = `<span class="tag tag-mod">${LBL[it.module] || it.module}</span>`;
+  return `<div class="card" onclick="openDet('${it.id}')">
+    <button class="del-btn" onclick="event.stopPropagation();delItem('${it.id}')" aria-label="删除">✕</button>
+    <img class="card-img" src="${it.img_data}" loading="lazy">
+    <div class="card-body">
+      <div class="card-title">${esc(it.title || '—')}</div>
+      <div class="tags">${modTag}${tagHtml}</div>
+      <div class="card-date">${fmtDate(it.created_at)}</div>
+    </div>
+  </div>`;
+}
+
+function renderTrow(it) {
+  const main = it.title || it.hook || it.cta || it.question || it.formula_name || '—';
+  const sub = it.note || it.emotion_why || it.answer || it.title_why || '';
+  const modTag = `<span class="tag tag-mod">${LBL[it.module] || it.module}</span>`;
+  const tagHtml = (it.tags || []).slice(0,2).map(t => `<span class="tag tag-custom">${esc(t)}</span>`).join('');
+  return `<div class="trow" onclick="openDet('${it.id}')">
+    <button class="del-btn" onclick="event.stopPropagation();delItem('${it.id}')" aria-label="删除">✕</button>
+    <div class="trow-main">${esc(main)}</div>
+    ${sub ? `<div class="trow-sub">${esc(sub)}</div>` : ''}
+    <div class="tags">${modTag}${tagHtml}</div>
+  </div>`;
+}
+
+function renderFB(it) {
+  const tagHtml = (it.tags || []).map(t => `<span class="tag tag-custom">${esc(t)}</span>`).join('');
+  return `<div class="fb" onclick="openDet('${it.id}')">
+    <button class="del-btn" onclick="event.stopPropagation();delItem('${it.id}')" aria-label="删除">✕</button>
+    <div class="fb-name">${esc(it.formula_name || '公式')}</div>
+    <div class="fb-formula">${esc(it.formula || '')}</div>
+    ${it.formula_ex ? `<div class="fb-example">示例：${esc(it.formula_ex)}</div>` : ''}
+    <div class="tags" style="margin-top:6px">${tagHtml}</div>
+  </div>`;
+}
+
+// ── Import ──
+function openImport() {
+  setModal(`
+    <div class="modal-h">✦ 导入 AI 分析结果 <span class="tag tag-mod" style="font-size:11px">${mode === 'team' ? '👥 存入团队库' : '👤 存入个人库'}</span></div>
+    <div style="font-size:13px;color:var(--text2);line-height:1.7;margin-bottom:10px">
+      把小红书截图发给 Claude，说「分析这张截图，输出选题库 JSON」，收到 JSON 后粘贴到下方。
+    </div>
+    <div class="img-drop" id="idz" onclick="document.getElementById('hfi').click()">
+      <span class="di">🖼</span>可选：上传截图存档（仅本地存图，不做 AI 分析）
+    </div>
+    <img id="ipv" style="display:none;width:100%;max-height:150px;object-fit:cover;border-radius:var(--radius-sm);margin-top:8px">
+    <label class="field-label">粘贴 JSON 分析结果</label>
+    <textarea id="jin" placeholder='{"title":"...","hook":"...","formula":"...",...}' style="min-height:100px;font-family:var(--mono);font-size:12px"></textarea>
+    <div id="jpv"></div><div id="jerr"></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">取消</button>
+      <button class="btn-preview" onclick="tryParse()">预览</button>
+      <button class="btn-ok" id="dosave" onclick="doSave()" disabled>确认保存</button>
+    </div>
+  `);
+  setupIdz();
+  document.getElementById('hfi').onchange = e => { if (e.target.files[0]) readImg(e.target.files[0]); e.target.value = ''; };
+}
+
+function setupIdz() {
+  const dz = document.getElementById('idz'); if (!dz) return;
+  dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag'); });
+  dz.addEventListener('dragleave', () => dz.classList.remove('drag'));
+  dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('drag'); if (e.dataTransfer.files[0]) readImg(e.dataTransfer.files[0]); });
+}
+function readImg(file) {
+  const r = new FileReader();
+  r.onload = ev => {
+    window._iImg = ev.target.result;
+    const p = document.getElementById('ipv'), dz = document.getElementById('idz');
+    if (p) { p.src = ev.target.result; p.style.display = 'block'; }
+    if (dz) dz.style.display = 'none';
+  };
+  r.readAsDataURL(file);
+}
+
+function tryParse() {
+  const raw = (document.getElementById('jin').value || '').trim();
+  const pe = document.getElementById('jerr'), pp = document.getElementById('jpv'), sb2 = document.getElementById('dosave');
+  if (!raw) { pe.innerHTML = '<div class="err">请粘贴 JSON 内容</div>'; return; }
+  try {
+    const s = raw.replace(/^```(?:json)?\s*/, '').replace(/\s*```$/, '').trim();
+    const o = JSON.parse(s);
+    window._iObj = o;
+    pp.innerHTML = `<div class="result-box">
+      ${o.title ? `<div class="rb-row"><span class="rb-label">标题</span><span class="rb-val">${esc(o.title)}</span></div>` : ''}
+      ${o.hook ? `<div class="rb-row"><span class="rb-label">Hook</span><span class="rb-val">${esc(o.hook)}</span> <span style="font-size:11px;color:var(--accent)">${esc(o.emotion || '')}</span></div>` : ''}
+      ${o.formula ? `<div class="rb-row"><span class="rb-label">文案公式</span><span class="rb-mono">${esc(o.formula)}</span></div>` : ''}
+      ${o.titlePattern ? `<div class="rb-row"><span class="rb-label">标题套路</span><span class="rb-val">${esc(o.titlePattern)}</span></div>` : ''}
+      ${o.cta ? `<div class="rb-row"><span class="rb-label">CTA</span><span class="rb-val">${esc(o.cta)}</span></div>` : ''}
+      ${(o.tags || []).length ? `<div class="tags" style="margin-top:4px">${o.tags.map(t => `<span class="tag tag-custom">${esc(t)}</span>`).join('')}</div>` : ''}
+    </div>`;
+    pe.innerHTML = '';
+    sb2.disabled = false;
+  } catch(e) {
+    pe.innerHTML = `<div class="err">JSON 解析失败：${esc(e.message)}</div>`;
+    pp.innerHTML = '';
+    sb2.disabled = true;
+  }
+}
+
+async function doSave() {
+  const o = window._iObj; if (!o) return;
+  const img = window._iImg || null;
+  const bt = o.tags || [];
+  const base = { mode, tags: bt, ...(img ? { img_data: img } : {}) };
+  const rows = [];
+  rows.push({ ...base, module: 'inspire', title: o.title, note: o.summary, keywords: o.keywords });
+  if (o.hook) rows.push({ ...base, module: 'hooks', hook: o.hook, emotion: o.emotion, emotion_why: o.emotionWhy || o.emotionAnalysis });
+  if (o.titlePattern) rows.push({ ...base, module: 'titles', title: o.title, title_pattern: o.titlePattern, title_why: o.titleWhy || o.titlePatternReason });
+  if (o.cta) rows.push({ ...base, module: 'cta', cta: o.cta, cta_goal: o.ctaGoal, cta_scene: o.ctaScene });
+  rows.push({ ...base, module: 'breakdown', title: o.title, note: o.summary, formula: o.formula, emotion: o.emotion, interaction: o.interaction });
+  if (o.formula) rows.push({ ...base, module: 'formulas', formula_name: o.formulaName || '文案公式', formula: o.formula, formula_ex: o.formulaEx || o.formulaExample });
+  if (o.question) rows.push({ ...base, module: 'comments', question: o.question, freq: o.freq, answer: o.answer });
+
+  showLoading(true);
+  const { error } = await sb.from('items').insert(rows);
+  showLoading(false);
+  if (error) { alert('保存失败：' + error.message); return; }
+  window._iObj = null; window._iImg = null;
+  await loadAll();
+  closeModal();
+}
+
+// ── Delete ──
+async function delItem(id) {
+  if (!confirm('确认删除？')) return;
+  showLoading(true);
+  await sb.from('items').delete().eq('id', id);
+  allItems = allItems.filter(it => it.id !== id);
+  showLoading(false);
+  syncBadges(); renderView();
+}
+
+// ── Detail ──
+function openDet(id) {
+  const it = allItems.find(x => x.id === id); if (!it) return;
+  const f = [];
+  const add = (l, v) => { if (v) f.push(`<div class="det-row"><div class="det-label">${l}</div><div class="det-val">${esc(v)}</div></div>`); };
+  add('标题', it.title); add('摘要', it.note); add('关键词', it.keywords);
+  add('Hook', it.hook); add('情绪触发', it.emotion); add('触发原因', it.emotion_why);
+  add('标题套路', it.title_pattern); add('互动技巧', it.interaction);
+  add('CTA', it.cta); add('CTA 目标', it.cta_goal); add('适用场景', it.cta_scene);
+  add('高频问题', it.question); add('回答模板', it.answer);
+  const modTag = `<span class="tag tag-mod">${LBL[it.module] || it.module}</span>`;
+  const tagHtml = (it.tags || []).map(t => `<span class="tag tag-custom">${esc(t)}</span>`).join('');
+  setModal(`
+    <div class="modal-h">${esc(it.title || it.hook || it.cta || it.formula_name || '详情')} ${modTag}</div>
+    ${it.img_data ? `<img class="preview" src="${it.img_data}">` : ''}
+    ${it.formula ? `<div class="det-formula">${esc(it.formula)}</div>` : ''}
+    ${it.formula_ex ? `<div class="det-row"><div class="det-label">公式示例</div><div class="det-val">${esc(it.formula_ex)}</div></div>` : ''}
+    ${f.join('')}
+    <div class="tags" style="margin-top:10px">${tagHtml}</div>
+    <div style="font-size:11px;color:var(--text3);margin-top:10px;font-family:var(--mono)">${fmtDate(it.created_at)}</div>
+    <div class="modal-actions"><button class="btn-ok" onclick="closeModal()">关闭</button></div>
+  `);
+}
+
+// ── Tag manager ──
+async function openTagMgr() {
+  const html = tags.map(t => `
+    <span class="tag-item">${esc(t)}<button class="tag-del" onclick="delTag('${esc(t)}')">✕</button></span>
+  `).join('');
+  setModal(`
+    <div class="modal-h">🏷 管理标签</div>
+    <div class="tag-wrap">${html}</div>
+    <div class="add-tag-row">
+      <input type="text" id="nt" placeholder="新标签名称">
+      <button class="btn-ok" style="padding:7px 14px;white-space:nowrap" onclick="addTag()">添加</button>
+    </div>
+    <div class="modal-actions"><button class="btn-ok" onclick="closeModal()">完成</button></div>
+  `);
+}
+async function delTag(name) {
+  if (!confirm('删除标签「' + name + '」？')) return;
+  await sb.from('tags').delete().eq('name', name);
+  tags = tags.filter(t => t !== name);
+  openTagMgr();
+}
+async function addTag() {
+  const v = (document.getElementById('nt').value || '').trim();
+  if (!v) return;
+  if (tags.includes(v)) { alert('已存在'); return; }
+  const { error } = await sb.from('tags').insert({ name: v });
+  if (error) { alert('添加失败：' + error.message); return; }
+  tags.push(v);
+  openTagMgr();
+}
+
+// ── Utils ──
+function setModal(html) {
+  document.getElementById('modal-content').innerHTML = html;
+  document.getElementById('modal').style.display = 'flex';
+}
+function closeModal() {
+  document.getElementById('modal').style.display = 'none';
+  window._iObj = null; window._iImg = null;
+}
+function handleMaskClick(e) { if (e.target.id === 'modal') closeModal(); }
+function showLoading(v) { document.getElementById('loading').style.display = v ? 'flex' : 'none'; }
+function fmtDate(d) { return d ? new Date(d).toLocaleDateString('zh-CN') : ''; }
+function esc(s) { return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+</script>
+</body>
+</html>
