@@ -823,38 +823,50 @@ function setupIdz() {
   });
 }
 
-function readImg(file) {
-  const r = new FileReader();
-  r.onload = ev => {
-    // 压缩图片再存，避免 Supabase timeout
-    const img = new Image();
-    img.onload = () => {
-      const MAX = 800;
-      let w = img.width, h = img.height;
-      if (w > MAX || h > MAX) {
-        if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
-        else { w = Math.round(w * MAX / h); h = MAX; }
-      }
-      const canvas = document.createElement('canvas');
-      canvas.width = w; canvas.height = h;
-      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-      const compressed = canvas.toDataURL('image/jpeg', 0.7);
-      if (!window._iImgs) window._iImgs = [];
-      window._iImgs.push(compressed);
-      const grid = document.getElementById('img-preview-grid');
-      if (grid) {
-        const idx = window._iImgs.length - 1;
-        const wrap = document.createElement('div');
-        wrap.style.cssText = 'position:relative;width:80px;height:80px;flex-shrink:0';
-        wrap.innerHTML = `<img src="${compressed}" style="width:80px;height:80px;object-fit:cover;border-radius:var(--radius-sm);border:1px solid var(--border)">
-          <button onclick="removeImg(${idx})" style="position:absolute;top:2px;right:2px;width:18px;height:18px;border-radius:50%;background:rgba(0,0,0,.6);border:none;color:#fff;font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0">✕</button>`;
-        wrap.id = 'img-wrap-' + idx;
-        grid.appendChild(wrap);
-      }
+async function readImg(file) {
+  // 先压缩
+  const compressed = await compressImg(file);
+  // 上传到 Supabase Storage
+  const filename = `${Date.now()}_${Math.random().toString(36).slice(2)}.jpg`;
+  const { data, error } = await sb.storage.from('images').upload(filename, compressed, { contentType: 'image/jpeg' });
+  if (error) { alert('图片上传失败：' + error.message); return; }
+  const { data: urlData } = sb.storage.from('images').getPublicUrl(filename);
+  const publicUrl = urlData.publicUrl;
+  if (!window._iImgs) window._iImgs = [];
+  window._iImgs.push(publicUrl);
+  const grid = document.getElementById('img-preview-grid');
+  if (grid) {
+    const idx = window._iImgs.length - 1;
+    const wrap = document.createElement('div');
+    wrap.style.cssText = 'position:relative;width:80px;height:80px;flex-shrink:0';
+    wrap.innerHTML = `<img src="${publicUrl}" style="width:80px;height:80px;object-fit:cover;border-radius:var(--radius-sm);border:1px solid var(--border)">
+      <button onclick="removeImg(${idx})" style="position:absolute;top:2px;right:2px;width:18px;height:18px;border-radius:50%;background:rgba(0,0,0,.6);border:none;color:#fff;font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0">✕</button>`;
+    wrap.id = 'img-wrap-' + idx;
+    grid.appendChild(wrap);
+  }
+}
+
+function compressImg(file) {
+  return new Promise(resolve => {
+    const reader = new FileReader();
+    reader.onload = ev => {
+      const img = new Image();
+      img.onload = () => {
+        const MAX = 1000;
+        let w = img.width, h = img.height;
+        if (w > MAX || h > MAX) {
+          if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
+          else { w = Math.round(w * MAX / h); h = MAX; }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        canvas.toBlob(blob => resolve(blob), 'image/jpeg', 0.8);
+      };
+      img.src = ev.target.result;
     };
-    img.src = ev.target.result;
-  };
-  r.readAsDataURL(file);
+    reader.readAsDataURL(file);
+  });
 }
 
 function removeImg(idx) {
@@ -916,9 +928,26 @@ async function doSave() {
 // ── Delete ──
 async function delItem(id) {
   if (!confirm('确认删除？')) return;
+  const it = allItems.find(x => x.id === id);
   showLoading(true);
   await sb.from('items').delete().eq('id', id);
-  allItems = allItems.filter(it => it.id !== id);
+  if (it?.img_data && it.img_data.includes('supabase.co/storage')) {
+    const filename = it.img_data.split('/').pop();
+    await sb.storage.from('images').remove([filename]);
+  }
+  allItems = allItems.filter(x => x.id !== id);
+  showLoading(false);
+  syncBadges(); renderView();
+}
+
+async function delGroup(sourceId) {
+  if (!confirm('确认删除这个帖子的所有数据？')) return;
+  const grp = allItems.filter(it => (it.source_id || it.id) === sourceId);
+  showLoading(true);
+  await sb.from('items').delete().eq('source_id', sourceId);
+  const filenames = grp.filter(x => x.img_data && x.img_data.includes('supabase.co/storage')).map(x => x.img_data.split('/').pop());
+  if (filenames.length) await sb.storage.from('images').remove(filenames);
+  allItems = allItems.filter(it => (it.source_id || it.id) !== sourceId);
   showLoading(false);
   syncBadges(); renderView();
 }
