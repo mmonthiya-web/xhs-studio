@@ -389,7 +389,7 @@ a { color: var(--accent); text-decoration: none; }
   </div>
 </div>
 
-<input type="file" id="hfi" accept="image/*" style="display:none">
+<input type="file" id="hfi" accept="image/*" multiple style="display:none">
 <input type="file" id="bfi" accept=".json" style="display:none">
 
 <script>
@@ -572,19 +572,21 @@ function renderFB(it) {
 
 // ── Import: paste JSON from Claude ──
 function openImport() {
+  window._iImgs = [];
   setModal(`
     <div class="modal-h">✦ 导入分析结果</div>
     <div style="background:var(--bg3);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:12px;font-size:13px;line-height:1.8;color:var(--text2)">
       <div style="color:var(--accent);font-weight:500;margin-bottom:6px">使用方式</div>
       <div>① 把小红书帖子截图发给 Claude</div>
       <div>② 说「分析这张截图，输出选题库 JSON」</div>
-      <div>③ 复制 JSON 粘贴到下方 → 确认保存</div>
+      <div>③ 复制 JSON 粘贴到下方，确认保存</div>
     </div>
     <div class="img-drop" id="idz" onclick="document.getElementById('hfi').click()">
       <span class="di">🖼</span>
-      <span>可选：上传截图存档（不做 AI 分析）</span>
+      <span>可选：上传截图存档（支持多张）</span><br>
+      <small style="font-size:11px;color:var(--text3)">点击或拖拽，可连续添加</small>
     </div>
-    <img id="ipv" style="display:none;width:100%;max-height:150px;object-fit:cover;border-radius:var(--radius-sm);margin-top:8px">
+    <div id="img-preview-grid" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px"></div>
     <label class="field-label">粘贴 JSON 分析结果</label>
     <textarea id="jin" placeholder='{"title":"...","hook":"...","formula":"...",...}' style="min-height:100px;font-family:var(--mono);font-size:12px"></textarea>
     <div id="jpv"></div>
@@ -596,25 +598,45 @@ function openImport() {
     </div>
   `);
   setupIdz();
-  document.getElementById('hfi').onchange = e => { if (e.target.files[0]) readImg(e.target.files[0]); e.target.value = ''; };
+  document.getElementById('hfi').onchange = e => {
+    Array.from(e.target.files).forEach(f => readImg(f));
+    e.target.value = '';
+  };
 }
 
 function setupIdz() {
   const dz = document.getElementById('idz'); if (!dz) return;
   dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag'); });
   dz.addEventListener('dragleave', () => dz.classList.remove('drag'));
-  dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('drag'); if (e.dataTransfer.files[0]) readImg(e.dataTransfer.files[0]); });
+  dz.addEventListener('drop', e => {
+    e.preventDefault(); dz.classList.remove('drag');
+    Array.from(e.dataTransfer.files).forEach(f => readImg(f));
+  });
 }
 
 function readImg(file) {
   const r = new FileReader();
   r.onload = ev => {
-    window._iImg = ev.target.result;
-    const p = document.getElementById('ipv'), dz = document.getElementById('idz');
-    if (p) { p.src = ev.target.result; p.style.display = 'block'; }
-    if (dz) dz.style.display = 'none';
+    if (!window._iImgs) window._iImgs = [];
+    window._iImgs.push(ev.target.result);
+    const grid = document.getElementById('img-preview-grid');
+    if (grid) {
+      const idx = window._iImgs.length - 1;
+      const wrap = document.createElement('div');
+      wrap.style.cssText = 'position:relative;width:80px;height:80px;flex-shrink:0';
+      wrap.innerHTML = `<img src="${ev.target.result}" style="width:80px;height:80px;object-fit:cover;border-radius:var(--radius-sm);border:1px solid var(--border)">
+        <button onclick="removeImg(${idx})" style="position:absolute;top:2px;right:2px;width:18px;height:18px;border-radius:50%;background:rgba(0,0,0,.6);border:none;color:#fff;font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0">✕</button>`;
+      wrap.id = 'img-wrap-' + idx;
+      grid.appendChild(wrap);
+    }
   };
   r.readAsDataURL(file);
+}
+
+function removeImg(idx) {
+  if (window._iImgs) window._iImgs[idx] = null;
+  const wrap = document.getElementById('img-wrap-' + idx);
+  if (wrap) wrap.remove();
 }
 
 function tryParse() {
@@ -642,9 +664,10 @@ function tryParse() {
 
 async function doSave() {
   const o = window._iObj; if (!o) return;
-  const img = window._iImg || null;
+  const imgs = (window._iImgs || []).filter(Boolean);
+  const firstImg = imgs[0] || null;
   const bt = o.tags || [];
-  const base = { mode, tags: bt, ...(img ? { img_data: img } : {}) };
+  const base = { mode, tags: bt, ...(firstImg ? { img_data: firstImg } : {}) };
   const rows = [];
   rows.push({ ...base, module: 'inspire', title: o.title, note: o.summary, keywords: o.keywords });
   if (o.hook) rows.push({ ...base, module: 'hooks', hook: o.hook, emotion: o.emotion, emotion_why: o.emotionWhy || o.emotionAnalysis });
@@ -653,12 +676,15 @@ async function doSave() {
   rows.push({ ...base, module: 'breakdown', title: o.title, note: o.summary, formula: o.formula, emotion: o.emotion, interaction: o.interaction });
   if (o.formula) rows.push({ ...base, module: 'formulas', formula_name: o.formulaName || '文案公式', formula: o.formula, formula_ex: o.formulaEx || o.formulaExample });
   if (o.question) rows.push({ ...base, module: 'comments', question: o.question, freq: o.freq, answer: o.answer });
-
+  // 额外图片单独存入灵感模块
+  for (let i = 1; i < imgs.length; i++) {
+    rows.push({ mode, tags: bt, img_data: imgs[i], module: 'inspire', title: o.title + ' (图' + (i+1) + ')', note: o.summary });
+  }
   showLoading(true);
   const { error } = await sb.from('items').insert(rows);
   showLoading(false);
   if (error) { alert('保存失败：' + error.message); return; }
-  window._iObj = null; window._iImg = null;
+  window._iObj = null; window._iImgs = [];
   await loadAll();
   closeModal();
 }
