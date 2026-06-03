@@ -293,15 +293,52 @@ a { color: var(--accent); text-decoration: none; }
 
 /* ── Mobile ── */
 @media (max-width: 640px) {
-  .sidebar { width: 48px; }
-  .sidebar .sb-brand-name, .sidebar .sb-brand-sub, .sidebar .mode-row,
-  .sidebar .mode-tag, .sidebar .sb-section, .nav-item span,
-  .sidebar .sb-footer .sb-btn span { display: none; }
-  .nav-item { justify-content: center; padding: 10px; }
-  .nav-badge { display: none; }
-  .sb-footer { padding: 6px; }
-  .sb-btn { justify-content: center; }
-  .topbar input { width: 100px; }
+  .shell { flex-direction: column; height: 100vh; }
+  .sidebar { display: none; }
+  .main { flex: 1; min-height: 0; padding-bottom: 60px; }
+  .topbar input { width: 120px; font-size: 13px; }
+  .view { padding: 10px; }
+  .grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .modal { padding: 14px; max-height: 85vh; }
+  .modal-mask { padding: 12px 8px; align-items: flex-end; }
+  .modal { border-radius: var(--radius) var(--radius) 0 0; max-height: 90vh; }
+
+  /* 底部导航 */
+  .mobile-nav {
+    display: flex; position: fixed; bottom: 0; left: 0; right: 0;
+    background: var(--bg2); border-top: 1px solid var(--border);
+    z-index: 90; height: 56px;
+  }
+  .mobile-nav-item {
+    flex: 1; display: flex; flex-direction: column; align-items: center;
+    justify-content: center; gap: 2px; cursor: pointer;
+    color: var(--text3); font-size: 10px; border: none; background: none;
+    padding: 6px 0; font-family: var(--sans); transition: color .12s;
+  }
+  .mobile-nav-item.on { color: var(--accent); }
+  .mobile-nav-item .mni { font-size: 18px; line-height: 1; }
+  .mobile-nav-badge {
+    position: absolute; top: 4px; right: calc(50% - 16px);
+    background: var(--accent); color: #1a1008; font-size: 9px;
+    padding: 1px 4px; border-radius: 999px; font-family: var(--mono);
+    min-width: 14px; text-align: center;
+  }
+  .mobile-more-menu {
+    position: fixed; bottom: 56px; left: 0; right: 0;
+    background: var(--bg2); border-top: 1px solid var(--border);
+    z-index: 89; padding: 8px;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
+  }
+  .mobile-more-btn {
+    padding: 10px; background: var(--bg3); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); font-size: 13px; color: var(--text2);
+    cursor: pointer; font-family: var(--sans); display: flex; align-items: center;
+    gap: 6px; justify-content: center;
+  }
+  .mobile-more-btn.primary { background: var(--accent); color: #1a1008; border-color: var(--accent); font-weight: 500; }
+}
+@media (min-width: 641px) {
+  .mobile-nav, .mobile-more-menu { display: none !important; }
 }
 </style>
 </head>
@@ -382,6 +419,7 @@ a { color: var(--accent); text-decoration: none; }
 
     <div class="sb-footer">
       <button class="sb-btn primary" onclick="openImport()">✦ 导入分析结果</button>
+      <button class="sb-btn" onclick="openAddComment()"><span>💬</span><span> 添加高频问题</span></button>
       <button class="sb-btn" onclick="openTagMgr()"><span>🏷</span><span> 管理标签</span></button>
       <button class="sb-btn" onclick="openConfig()"><span>⚙</span><span> 配置</span></button>
     </div>
@@ -400,6 +438,38 @@ a { color: var(--accent); text-decoration: none; }
 
 <input type="file" id="hfi" accept="image/*" multiple style="display:none">
 <input type="file" id="bfi" accept=".json" style="display:none">
+
+<!-- Mobile bottom nav -->
+<nav class="mobile-nav" id="mobile-nav">
+  <button class="mobile-nav-item on" id="mni-all" onclick="goMobile('all')" style="position:relative">
+    <span class="mni">⊞</span><span>全部</span>
+    <span class="mobile-nav-badge" id="mb-all" style="display:none">0</span>
+  </button>
+  <button class="mobile-nav-item" id="mni-inspire" onclick="goMobile('inspire')" style="position:relative">
+    <span class="mni">💡</span><span>灵感</span>
+  </button>
+  <button class="mobile-nav-item" id="mni-hooks" onclick="goMobile('hooks')" style="position:relative">
+    <span class="mni">🪝</span><span>Hooks</span>
+  </button>
+  <button class="mobile-nav-item" id="mni-formulas" onclick="goMobile('formulas')" style="position:relative">
+    <span class="mni">ƒ</span><span>公式</span>
+  </button>
+  <button class="mobile-nav-item" id="mni-more" onclick="toggleMoreMenu()" style="position:relative">
+    <span class="mni">☰</span><span>更多</span>
+  </button>
+</nav>
+
+<!-- Mobile more menu -->
+<div class="mobile-more-menu" id="mobile-more-menu" style="display:none">
+  <button class="mobile-more-btn primary" onclick="openImport();toggleMoreMenu()">✦ 导入分析结果</button>
+  <button class="mobile-more-btn" onclick="goMobile('titles');toggleMoreMenu()">T 标题库</button>
+  <button class="mobile-more-btn" onclick="goMobile('cta');toggleMoreMenu()">☞ CTA</button>
+  <button class="mobile-more-btn" onclick="goMobile('breakdown');toggleMoreMenu()">🔬 爆款拆解</button>
+  <button class="mobile-more-btn" onclick="goMobile('comments');toggleMoreMenu()">💬 高频问题</button>
+  <button class="mobile-more-btn" onclick="openAddComment();toggleMoreMenu()">+ 添加问题</button>
+  <button class="mobile-more-btn" onclick="openTagMgr();toggleMoreMenu()">🏷 标签</button>
+  <button class="mobile-more-btn" onclick="openConfig();toggleMoreMenu()">⚙ 配置</button>
+</div>
 
 <script>
 // ══════════════════════════════════════════
@@ -858,6 +928,26 @@ function openDet(id) {
   const it = allItems.find(x => x.id === id); if (!it) return;
   const f = [];
   const add = (l, v) => { if (v) f.push(`<div class="det-row"><div class="det-label">${l}</div><div class="det-val">${esc(v)}</div></div>`); };
+
+  // 高频问题模块特殊处理
+  if (it.module === 'comments') {
+    setModal(`
+      <div class="modal-h">💬 ${esc(it.question || '高频问题')}</div>
+      ${it.freq ? `<div style="font-size:12px;color:var(--accent);margin-bottom:10px">频率：${esc(it.freq)}</div>` : ''}
+      ${it.answer ? `
+        <div class="field-label">回答模板</div>
+        <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;font-size:13px;color:var(--text);line-height:1.7;margin-top:4px">${esc(it.answer)}</div>
+        <button onclick="copyAnswer('${esc(it.answer).replace(/'/g,"\\'")}');this.textContent='✓ 已复制';setTimeout(()=>this.textContent='复制回答模板',2000)" style="margin-top:8px;width:100%;padding:7px;background:var(--green-bg);color:var(--green);border:1px solid var(--green);border-radius:var(--radius-sm);font-size:13px;cursor:pointer;font-family:var(--font-sans)">复制回答模板</button>
+      ` : ''}
+      <div class="tags" style="margin-top:10px">${(it.tags||[]).map(t=>`<span class="tag tag-custom">${esc(t)}</span>`).join('')}</div>
+      <div class="modal-actions">
+        <button class="btn-cancel" onclick="delItem('${it.id}');closeModal()">删除</button>
+        <button class="btn-ok" onclick="closeModal()">关闭</button>
+      </div>
+    `);
+    return;
+  }
+
   add('标题', it.title); add('摘要', it.note); add('关键词', it.keywords);
   add('Hook', it.hook); add('情绪触发', it.emotion); add('触发原因', it.emotion_why);
   add('标题套路', it.title_pattern); add('互动技巧', it.interaction);
@@ -867,7 +957,7 @@ function openDet(id) {
   const tagHtml = (it.tags || []).map(t => `<span class="tag tag-custom">${esc(t)}</span>`).join('');
   setModal(`
     <div class="modal-h">${esc(it.title || it.hook || it.cta || it.formula_name || '详情')} ${modTag}</div>
-    ${it.img_data ? `<img class="preview" src="${it.img_data}">` : ''}
+    ${it.img_data ? `<img class="preview" src="${it.img_data}" style="cursor:zoom-in" onclick="openLightbox('${it.img_data.replace(/'/g,"\\'")}')">` : ''}
     ${it.formula ? `<div class="det-formula">${esc(it.formula)}</div>` : ''}
     ${it.formula_ex ? `<div class="det-row"><div class="det-label">公式示例</div><div class="det-val">${esc(it.formula_ex)}</div></div>` : ''}
     ${f.join('')}
@@ -875,6 +965,49 @@ function openDet(id) {
     <div style="font-size:11px;color:var(--text3);margin-top:10px;font-family:var(--mono)">${fmtDate(it.created_at)}</div>
     <div class="modal-actions"><button class="btn-ok" onclick="closeModal()">关闭</button></div>
   `);
+}
+
+function copyAnswer(text) {
+  navigator.clipboard.writeText(text).catch(() => {});
+}
+
+// ── Add comment manually ──
+function openAddComment() {
+  setModal(`
+    <div class="modal-h">💬 添加高频问题</div>
+    <label class="field-label">评论区问题 *</label>
+    <input type="text" id="c-question" placeholder="如：在哪里买？多少钱？适合什么肤质？">
+    <label class="field-label">出现频率</label>
+    <input type="text" id="c-freq" placeholder="高 / 中 / 低，或具体次数">
+    <label class="field-label">回答模板</label>
+    <textarea id="c-answer" placeholder="可直接复制粘贴的标准回复..."></textarea>
+    <label class="field-label">标签</label>
+    <div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:4px" id="c-tags">
+      ${tags.map(t => `<span style="font-size:12px;padding:3px 10px;border-radius:999px;border:1px solid var(--border2);cursor:pointer;color:var(--text2);background:var(--bg3)" onclick="this.classList.toggle('on');this.style.background=this.classList.contains('on')?'var(--accent-bg)':'var(--bg3)';this.style.color=this.classList.contains('on')?'var(--accent)':'var(--text2)';this.style.borderColor=this.classList.contains('on')?'var(--accent)':'var(--border2)'">${esc(t)}</span>`).join('')}
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">取消</button>
+      <button class="btn-ok" onclick="saveComment()">保存</button>
+    </div>
+  `);
+}
+
+async function saveComment() {
+  const q = (document.getElementById('c-question').value || '').trim();
+  if (!q) { alert('请填写问题内容'); return; }
+  const freq = (document.getElementById('c-freq').value || '').trim();
+  const answer = (document.getElementById('c-answer').value || '').trim();
+  const selTags = Array.from(document.querySelectorAll('#c-tags span.on')).map(el => el.textContent);
+  showLoading(true);
+  const { error } = await sb.from('items').insert([{
+    mode, module: 'comments', source_id: 'manual_' + Date.now(),
+    question: q, freq, answer, tags: selTags
+  }]);
+  showLoading(false);
+  if (error) { alert('保存失败：' + error.message); return; }
+  await loadAll();
+  closeModal();
+  go('comments');
 }
 
 // ── Tag manager ──
@@ -928,6 +1061,28 @@ function closeModal() {
 function handleMaskClick(e) { if (e.target.id === 'modal') closeModal(); }
 function showLoading(v) { document.getElementById('loading').style.display = v ? 'flex' : 'none'; }
 function fmtDate(d) { return d ? new Date(d).toLocaleDateString('zh-CN') : ''; }
+function goMobile(m) {
+  go(m);
+  document.querySelectorAll('.mobile-nav-item').forEach(el => el.classList.remove('on'));
+  const el = document.getElementById('mni-' + m);
+  if (el) el.classList.add('on');
+  else document.getElementById('mni-more').classList.add('on');
+}
+
+function toggleMoreMenu() {
+  const menu = document.getElementById('mobile-more-menu');
+  if (menu) menu.style.display = menu.style.display === 'none' ? 'grid' : 'none';
+}
+
+// Close more menu when clicking outside
+document.addEventListener('click', e => {
+  const menu = document.getElementById('mobile-more-menu');
+  const btn = document.getElementById('mni-more');
+  if (menu && btn && !menu.contains(e.target) && !btn.contains(e.target)) {
+    menu.style.display = 'none';
+  }
+});
+
 function esc(s) { return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
 </script>
 </body>
