@@ -281,6 +281,8 @@ a { color: var(--accent); text-decoration: none; }
 .tag-del:hover { color: var(--red); }
 .add-tag-row { display: flex; gap: 8px; margin-top: 8px; }
 
+.ai-step { font-size: 13px; color: var(--text2); padding: 8px 0; display: flex; align-items: center; gap: 6px; }
+
 /* ── Mobile ── */
 @media (max-width: 640px) {
   .sidebar { width: 48px; }
@@ -370,7 +372,7 @@ a { color: var(--accent); text-decoration: none; }
     </div>
 
     <div class="sb-footer">
-      <button class="sb-btn primary" onclick="openImport()">✦ 导入分析结果</button>
+      <button class="sb-btn primary" onclick="openImport()">📸 上传截图分析</button>
       <button class="sb-btn" onclick="openTagMgr()"><span>🏷</span><span> 管理标签</span></button>
       <button class="sb-btn" onclick="openConfig()"><span>⚙</span><span> 配置</span></button>
     </div>
@@ -381,7 +383,7 @@ a { color: var(--accent); text-decoration: none; }
     <div class="topbar">
       <div class="topbar-title" id="view-title">全部</div>
       <input type="text" id="sq" placeholder="搜索…" oninput="renderView()">
-      <button class="btn-import" onclick="openImport()">✦ 导入</button>
+      <button class="btn-import" onclick="openImport()">📸 上传截图</button>
     </div>
     <div class="view" id="vw"></div>
   </div>
@@ -392,12 +394,12 @@ a { color: var(--accent); text-decoration: none; }
 
 <script>
 // ══════════════════════════════════════════
-//  CONFIG — 填入你的 Supabase 信息
-//  或者留空，第一次打开会弹出配置界面
+//  CONFIG
 // ══════════════════════════════════════════
-const DEFAULT_URL = '';   // 例: 'https://abc.supabase.co'
-const DEFAULT_KEY = '';   // 例: 'eyJhbGci...'
-
+const DEFAULT_URL = 'https://amfhicxwkzlxzxdltbam.supabase.co';
+const DEFAULT_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFtZmhpY3h3a3pseHp4ZGx0YmFtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA0MTY2NTUsImV4cCI6MjA5NTk5MjY1NX0.At7HapK-9nqeDhIb6h5c13-FMMfOY-xmev-NmcauxKc';
+const GEMINI_KEY = 'AIzaSyAQ.Ab8RN6JiBc_a3eyXfMboFBtulKZrfjacBpYv1X3c8kA3Xbbgrg';
+const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`;
 // ══════════════════════════════════════════
 
 let sb = null;
@@ -568,70 +570,109 @@ function renderFB(it) {
   </div>`;
 }
 
-// ── Import ──
+// ── Import: AI-powered upload ──
 function openImport() {
   setModal(`
-    <div class="modal-h">✦ 导入 AI 分析结果 <span class="tag tag-mod" style="font-size:11px">${mode === 'team' ? '👥 存入团队库' : '👤 存入个人库'}</span></div>
-    <div style="font-size:13px;color:var(--text2);line-height:1.7;margin-bottom:10px">
-      把小红书截图发给 Claude，说「分析这张截图，输出选题库 JSON」，收到 JSON 后粘贴到下方。
+    <div class="modal-h">✦ 上传截图 AI 自动分析</div>
+    <div style="font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:12px">
+      上传小红书帖子截图，AI 自动提取标题、Hook、文案公式、CTA 等，一键保存到所有模块。
     </div>
     <div class="img-drop" id="idz" onclick="document.getElementById('hfi').click()">
-      <span class="di">🖼</span>可选：上传截图存档（仅本地存图，不做 AI 分析）
+      <span class="di">📸</span>
+      <span>点击或拖拽上传截图</span><br>
+      <small style="font-size:11px;color:var(--text3)">JPG · PNG · 支持 Ctrl+V 粘贴</small>
     </div>
-    <img id="ipv" style="display:none;width:100%;max-height:150px;object-fit:cover;border-radius:var(--radius-sm);margin-top:8px">
-    <label class="field-label">粘贴 JSON 分析结果</label>
-    <textarea id="jin" placeholder='{"title":"...","hook":"...","formula":"...",...}' style="min-height:100px;font-family:var(--mono);font-size:12px"></textarea>
-    <div id="jpv"></div><div id="jerr"></div>
+    <img id="ipv" style="display:none;width:100%;max-height:180px;object-fit:cover;border-radius:var(--radius-sm);margin-top:10px">
+    <div id="ai-steps" style="display:none;margin-top:12px">
+      <div id="step-analyze" class="ai-step">⏳ AI 分析中，请稍等…</div>
+    </div>
+    <div id="jpv"></div>
+    <div id="jerr"></div>
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closeModal()">取消</button>
-      <button class="btn-preview" onclick="tryParse()">预览</button>
-      <button class="btn-ok" id="dosave" onclick="doSave()" disabled>确认保存</button>
+      <button class="btn-ok" id="dosave" onclick="doSave()" disabled>确认保存到所有模块</button>
     </div>
   `);
   setupIdz();
-  document.getElementById('hfi').onchange = e => { if (e.target.files[0]) readImg(e.target.files[0]); e.target.value = ''; };
+  document.getElementById('hfi').onchange = e => { if (e.target.files[0]) handleUpload(e.target.files[0]); e.target.value = ''; };
+  document.addEventListener('paste', handlePaste, { once: true });
+}
+
+function handlePaste(e) {
+  const imgs = Array.from(e.clipboardData.items || []).filter(i => i.type.startsWith('image/')).map(i => i.getAsFile());
+  if (imgs.length) handleUpload(imgs[0]);
 }
 
 function setupIdz() {
   const dz = document.getElementById('idz'); if (!dz) return;
   dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag'); });
   dz.addEventListener('dragleave', () => dz.classList.remove('drag'));
-  dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('drag'); if (e.dataTransfer.files[0]) readImg(e.dataTransfer.files[0]); });
+  dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('drag'); if (e.dataTransfer.files[0]) handleUpload(e.dataTransfer.files[0]); });
 }
-function readImg(file) {
+
+function handleUpload(file) {
   const r = new FileReader();
   r.onload = ev => {
     window._iImg = ev.target.result;
     const p = document.getElementById('ipv'), dz = document.getElementById('idz');
     if (p) { p.src = ev.target.result; p.style.display = 'block'; }
     if (dz) dz.style.display = 'none';
+    runGemini(ev.target.result, file.type || 'image/jpeg');
   };
   r.readAsDataURL(file);
 }
 
-function tryParse() {
-  const raw = (document.getElementById('jin').value || '').trim();
-  const pe = document.getElementById('jerr'), pp = document.getElementById('jpv'), sb2 = document.getElementById('dosave');
-  if (!raw) { pe.innerHTML = '<div class="err">请粘贴 JSON 内容</div>'; return; }
+async function runGemini(dataUrl, mimeType) {
+  const steps = document.getElementById('ai-steps');
+  const stepEl = document.getElementById('step-analyze');
+  const jerr = document.getElementById('jerr');
+  const jpv = document.getElementById('jpv');
+  if (steps) steps.style.display = 'block';
+  if (stepEl) stepEl.innerHTML = '<span class="spin"></span> AI 分析中，请稍等…';
+
+  const b64 = dataUrl.split(',')[1];
+  const prompt = `你是小红书爆款内容分析专家。分析这张小红书帖子截图，提取所有关键信息。
+只返回纯JSON对象，不要任何\`\`\`标记或多余文字。格式：
+{"title":"帖子标题","summary":"正文摘要不超过50字","keywords":"3到5个关键词逗号分隔","hook":"最吸引人的开头句","emotion":"情绪触发类型如焦虑共鸣好奇惊喜羡慕","emotionWhy":"为什么有效1句话","titlePattern":"标题套路如数字型反差型痛点型疑问型利益型","titleWhy":"为什么是这个套路1句","formula":"文案结构公式用方括号标记模块","formulaName":"公式名称","formulaEx":"套用公式的新例子1句","cta":"CTA文案","ctaGoal":"目标行为","ctaScene":"适合场景","interaction":"互动引导技巧","tags":["标签1","标签2","标签3"]}`;
+
   try {
-    const s = raw.replace(/^```(?:json)?\s*/, '').replace(/\s*```$/, '').trim();
-    const o = JSON.parse(s);
+    const resp = await fetch(GEMINI_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [
+          { inline_data: { mime_type: mimeType, data: b64 } },
+          { text: prompt }
+        ]}],
+        generationConfig: { temperature: 0.3, maxOutputTokens: 1200 }
+      })
+    });
+    if (!resp.ok) { const t = await resp.text(); throw new Error(`Gemini ${resp.status}: ${t.slice(0,200)}`); }
+    const res = await resp.json();
+    const raw = res.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    const jsonStr = raw.replace(/^```(?:json)?\s*/, '').replace(/\s*```$/, '').trim();
+    const o = JSON.parse(jsonStr);
     window._iObj = o;
-    pp.innerHTML = `<div class="result-box">
-      ${o.title ? `<div class="rb-row"><span class="rb-label">标题</span><span class="rb-val">${esc(o.title)}</span></div>` : ''}
-      ${o.hook ? `<div class="rb-row"><span class="rb-label">Hook</span><span class="rb-val">${esc(o.hook)}</span> <span style="font-size:11px;color:var(--accent)">${esc(o.emotion || '')}</span></div>` : ''}
-      ${o.formula ? `<div class="rb-row"><span class="rb-label">文案公式</span><span class="rb-mono">${esc(o.formula)}</span></div>` : ''}
-      ${o.titlePattern ? `<div class="rb-row"><span class="rb-label">标题套路</span><span class="rb-val">${esc(o.titlePattern)}</span></div>` : ''}
-      ${o.cta ? `<div class="rb-row"><span class="rb-label">CTA</span><span class="rb-val">${esc(o.cta)}</span></div>` : ''}
-      ${(o.tags || []).length ? `<div class="tags" style="margin-top:4px">${o.tags.map(t => `<span class="tag tag-custom">${esc(t)}</span>`).join('')}</div>` : ''}
-    </div>`;
-    pe.innerHTML = '';
-    sb2.disabled = false;
+    if (stepEl) stepEl.innerHTML = '✅ 分析完成';
+    showResultPreview(o, jpv);
+    const sb2 = document.getElementById('dosave');
+    if (sb2) sb2.disabled = false;
   } catch(e) {
-    pe.innerHTML = `<div class="err">JSON 解析失败：${esc(e.message)}</div>`;
-    pp.innerHTML = '';
-    sb2.disabled = true;
+    if (stepEl) stepEl.innerHTML = '❌ 分析失败';
+    if (jerr) jerr.innerHTML = `<div class="err">错误：${esc(e.message)}</div>`;
   }
+}
+
+function showResultPreview(o, container) {
+  if (!container) return;
+  container.innerHTML = `<div class="result-box" style="margin-top:10px">
+    ${o.title ? `<div class="rb-row"><span class="rb-label">标题</span><span class="rb-val">${esc(o.title)}</span></div>` : ''}
+    ${o.hook ? `<div class="rb-row"><span class="rb-label">Hook</span><span class="rb-val">${esc(o.hook)}</span> <span style="font-size:11px;color:var(--accent)">${esc(o.emotion||'')}</span></div>` : ''}
+    ${o.formula ? `<div class="rb-row"><span class="rb-label">文案公式</span><span class="rb-mono">${esc(o.formula)}</span></div>` : ''}
+    ${o.titlePattern ? `<div class="rb-row"><span class="rb-label">标题套路</span><span class="rb-val">${esc(o.titlePattern)}</span></div>` : ''}
+    ${o.cta ? `<div class="rb-row"><span class="rb-label">CTA</span><span class="rb-val">${esc(o.cta)}</span></div>` : ''}
+    ${(o.tags||[]).length ? `<div class="tags" style="margin-top:6px">${o.tags.map(t=>`<span class="tag tag-custom">${esc(t)}</span>`).join('')}</div>` : ''}
+  </div>`;
 }
 
 async function doSave() {
