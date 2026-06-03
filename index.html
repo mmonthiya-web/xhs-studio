@@ -622,7 +622,7 @@ function tryParse() {
   const pe = document.getElementById('jerr'), pp = document.getElementById('jpv'), sb2 = document.getElementById('dosave');
   if (!raw) { pe.innerHTML = '<div class="err">请粘贴 JSON 内容</div>'; return; }
   try {
-    const s = raw.replace(/^```(?:json)?\s*/, '').replace(/\s*```$/, '').trim();
+    const s = raw.replace(/^```(?:json)?\s*/,'').replace(/\s*```$/,'').replace(/[\u201C\u201D]/g,'"').replace(/[\u2018\u2019]/g,"'").trim();
     const o = JSON.parse(s);
     window._iObj = o;
     pp.innerHTML = `<div class="result-box" style="margin-top:10px">
