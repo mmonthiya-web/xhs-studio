@@ -629,138 +629,65 @@ function openGroup(sourceId) {
     <div id="creation-area"></div>
     <div class="modal-actions">
       <button class="btn-cancel" onclick="delGroup('${sourceId}');closeModal()">删除</button>
-      <button class="btn-preview" onclick="genTopics()">✦ 基于这个帖子创作</button>
+      <button class="btn-preview" onclick="showCreationPrompt()">✦ 基于这个帖子创作</button>
       <button class="btn-ok" onclick="closeModal()">关闭</button>
     </div>
   `);
 }
 
-async function genTopics() {
+function showCreationPrompt() {
   const { rep, getField } = window._curGrp;
   const area = document.getElementById('creation-area');
   if (!area) return;
-  area.innerHTML = `<div style="margin-top:14px;padding:12px;background:var(--bg3);border-radius:var(--radius-sm);font-size:13px;color:var(--text2)"><span class="spin"></span> AI 生成选题方向中...</div>`;
 
-  const context = `原帖标题: ${rep.title || ''}
+  const prompt = `请根据以下小红书爆款帖子的拆解数据，先给我5个可以套用相同结构的新选题方向，再让我选一个生成完整创作大纲。
+
+【原帖拆解数据】
+标题: ${rep.title || ''}
 摘要: ${getField('inspire','note') || ''}
 情绪触发: ${getField('hooks','emotion') || ''} - ${getField('hooks','emotion_why') || ''}
-标题套路: ${getField('titles','title_pattern') || ''}
+标题套路: ${getField('titles','title_pattern') || ''} - ${getField('titles','title_why') || ''}
 文案公式: ${getField('formulas','formula') || getField('breakdown','formula') || ''}
-CTA目标: ${getField('cta','cta_goal') || ''}
+CTA: ${getField('cta','cta') || ''} (目标: ${getField('cta','cta_goal') || ''})
 互动技巧: ${getField('breakdown','interaction') || ''}
-标签: ${(rep.tags||[]).join(',')}`;
 
-  const prompt = `你是小红书内容创作专家。根据以下爆款帖子的拆解数据，生成5个可以套用相同结构创作的新选题方向。
+【第一步】先输出5个选题方向，每个包含: 方向名称、一句话描述、目标受众。
+【第二步】我选完后，你再生成完整大纲: 3个标题备选 + 开头Hook + 内容结构 + CTA + 创作注意事项。`;
 
-${context}
-
-要求:
-- 保留原帖的情绪触发方式和文案公式结构
-- 给出不同垂类或角度的新选题
-- 每个选题包含: 方向名称、一句话描述、目标受众
-- 只返回纯JSON数组，不要任何说明文字
-
-格式: [{"title":"选题方向名","desc":"一句话描述这个选题","audience":"目标受众"},...]`;
-
-  try {
-    const resp = await fetch(GEMINI_API, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { temperature: 0.7, maxOutputTokens: 800 } })
-    });
-    if (!resp.ok) throw new Error('Gemini ' + resp.status);
-    const res = await resp.json();
-    const raw = (res.candidates?.[0]?.content?.parts?.[0]?.text || '').replace(/^```(?:json)?\s*/,'').replace(/\s*```$/,'').trim();
-    const topics = JSON.parse(raw);
-    window._curTopics = topics;
-    area.innerHTML = `
-      <div style="margin-top:14px">
-        <div style="font-size:12px;color:var(--accent);font-weight:500;margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em">选择一个方向</div>
-        ${topics.map((t,i) => `
-          <div class="topic-card" id="tc-${i}" onclick="selectTopic(${i})" style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;margin-bottom:6px;cursor:pointer;transition:border-color .12s">
-            <div style="font-size:13px;font-weight:500;color:var(--text);margin-bottom:2px">${esc(t.title)}</div>
-            <div style="font-size:12px;color:var(--text2)">${esc(t.desc)}</div>
-            <div style="font-size:11px;color:var(--text3);margin-top:3px">受众: ${esc(t.audience)}</div>
-          </div>`).join('')}
+  area.innerHTML = `
+    <div style="margin-top:14px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px">
+      <div style="font-size:12px;color:var(--accent);font-weight:500;margin-bottom:8px">使用方式</div>
+      <div style="font-size:12px;color:var(--text2);line-height:1.7;margin-bottom:10px">
+        复制下方提示词 → 发给 Claude → 选一个选题方向 → 让 Claude 生成大纲
       </div>
-      <div id="outline-area"></div>`;
-  } catch(e) {
-    area.innerHTML = `<div class="err" style="margin-top:12px">生成失败: ${esc(e.message)}</div>`;
-  }
-}
-
-function selectTopic(idx) {
-  document.querySelectorAll('.topic-card').forEach((el,i) => {
-    el.style.borderColor = i === idx ? 'var(--accent)' : 'var(--border)';
-    el.style.background = i === idx ? 'var(--accent-bg)' : 'var(--bg3)';
-  });
-  window._curTopicIdx = idx;
-  const outlineArea = document.getElementById('outline-area');
-  if (outlineArea) outlineArea.innerHTML = `
-    <div style="margin-top:10px;display:flex;justify-content:flex-end">
-      <button class="btn-ok" onclick="genOutline()">生成创作大纲 →</button>
+      <div style="background:var(--bg2);border-radius:var(--radius-sm);padding:10px;font-size:11px;color:var(--text2);font-family:var(--mono);line-height:1.7;max-height:160px;overflow-y:auto;white-space:pre-wrap" id="prompt-box">${esc(prompt)}</div>
+      <button onclick="copyPrompt()" style="margin-top:8px;width:100%;padding:8px;background:var(--accent);color:#1a1008;border:none;border-radius:var(--radius-sm);font-size:13px;font-weight:500;cursor:pointer;font-family:var(--font-sans)" id="copy-btn">复制提示词</button>
     </div>`;
 }
 
-async function genOutline() {
+function copyPrompt() {
   const { rep, getField } = window._curGrp;
-  const topic = window._curTopics[window._curTopicIdx];
-  const outlineArea = document.getElementById('outline-area');
-  if (!outlineArea) return;
-  outlineArea.innerHTML = `<div style="padding:12px;background:var(--bg3);border-radius:var(--radius-sm);margin-top:10px;font-size:13px;color:var(--text2)"><span class="spin"></span> 生成创作大纲中...</div>`;
+  const prompt = `请根据以下小红书爆款帖子的拆解数据，先给我5个可以套用相同结构的新选题方向，再让我选一个生成完整创作大纲。
 
-  const prompt = `你是小红书内容创作专家。根据以下爆款帖子结构和选定选题，生成一份完整的创作大纲。
+【原帖拆解数据】
+标题: ${rep.title || ''}
+摘要: ${getField('inspire','note') || ''}
+情绪触发: ${getField('hooks','emotion') || ''} - ${getField('hooks','emotion_why') || ''}
+标题套路: ${getField('titles','title_pattern') || ''} - ${getField('titles','title_why') || ''}
+文案公式: ${getField('formulas','formula') || getField('breakdown','formula') || ''}
+CTA: ${getField('cta','cta') || ''} (目标: ${getField('cta','cta_goal') || ''})
+互动技巧: ${getField('breakdown','interaction') || ''}
 
-原帖文案公式: ${getField('formulas','formula') || getField('breakdown','formula') || ''}
-原帖标题套路: ${getField('titles','title_pattern') || ''}
-原帖情绪触发: ${getField('hooks','emotion') || ''} - ${getField('hooks','emotion_why') || ''}
-原帖CTA: ${getField('cta','cta') || ''}
-原帖互动技巧: ${getField('breakdown','interaction') || ''}
+【第一步】先输出5个选题方向，每个包含: 方向名称、一句话描述、目标受众。
+【第二步】我选完后，你再生成完整大纲: 3个标题备选 + 开头Hook + 内容结构 + CTA + 创作注意事项。`;
 
-选定选题: ${topic.title}
-选题描述: ${topic.desc}
-目标受众: ${topic.audience}
-
-请生成完整创作大纲，只返回纯JSON，不要说明文字，格式:
-{"titles":["标题备选1","标题备选2","标题备选3"],"hook":"开头第一句话","structure":[{"section":"模块名称","content":"这个模块写什么内容"}],"cta":"结尾CTA文案","tips":"创作注意事项1句话"}`;
-
-  try {
-    const resp = await fetch(GEMINI_API, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { temperature: 0.6, maxOutputTokens: 1000 } })
-    });
-    if (!resp.ok) throw new Error('Gemini ' + resp.status);
-    const res = await resp.json();
-    const raw = (res.candidates?.[0]?.content?.parts?.[0]?.text || '').replace(/^```(?:json)?\s*/,'').replace(/\s*```$/,'').trim();
-    const o = JSON.parse(raw);
-    outlineArea.innerHTML = `
-      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;margin-top:10px">
-        <div style="font-size:11px;color:var(--accent);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px">创作大纲</div>
-        <div style="margin-bottom:10px">
-          <div style="font-size:10px;color:var(--text3);margin-bottom:4px">标题备选</div>
-          ${(o.titles||[]).map((t,i) => `<div style="font-size:13px;color:var(--text);padding:5px 8px;background:var(--bg2);border-radius:4px;margin-bottom:4px">${i+1}. ${esc(t)}</div>`).join('')}
-        </div>
-        <div style="margin-bottom:10px">
-          <div style="font-size:10px;color:var(--text3);margin-bottom:4px">开头 Hook</div>
-          <div style="font-size:13px;color:var(--accent2);font-style:italic;padding:6px 8px;background:var(--accent-bg);border-radius:4px">${esc(o.hook||'')}</div>
-        </div>
-        <div style="margin-bottom:10px">
-          <div style="font-size:10px;color:var(--text3);margin-bottom:4px">内容结构</div>
-          ${(o.structure||[]).map(s => `<div style="display:flex;gap:8px;margin-bottom:6px;align-items:flex-start">
-            <span style="font-size:11px;background:var(--purple-bg);color:var(--purple);padding:2px 7px;border-radius:999px;white-space:nowrap;flex-shrink:0">${esc(s.section)}</span>
-            <span style="font-size:12px;color:var(--text2);line-height:1.6">${esc(s.content)}</span>
-          </div>`).join('')}
-        </div>
-        <div style="margin-bottom:8px">
-          <div style="font-size:10px;color:var(--text3);margin-bottom:4px">CTA</div>
-          <div style="font-size:13px;color:var(--green);padding:5px 8px;background:var(--green-bg);border-radius:4px">${esc(o.cta||'')}</div>
-        </div>
-        ${o.tips ? `<div style="font-size:11px;color:var(--text3);margin-top:6px">💡 ${esc(o.tips)}</div>` : ''}
-      </div>`;
-  } catch(e) {
-    outlineArea.innerHTML = `<div class="err" style="margin-top:10px">生成失败: ${esc(e.message)}</div>`;
-  }
+  navigator.clipboard.writeText(prompt).then(() => {
+    const btn = document.getElementById('copy-btn');
+    if (btn) { btn.textContent = '✓ 已复制'; setTimeout(() => { btn.textContent = '复制提示词'; }, 2000); }
+  }).catch(() => {
+    const btn = document.getElementById('copy-btn');
+    if (btn) btn.textContent = '请手动复制上方文字';
+  });
 }
 
 async function delGroup(sourceId) {
