@@ -1094,7 +1094,11 @@ function jumpToClaude() {
 async function doSave() {
   const o = window._iObj; if (!o) return;
   const imgs = (window._iImgs || []).filter(Boolean);
-  const xhsLink = (document.getElementById('xhs-link') && document.getElementById('xhs-link').value.trim()) || null;
+  // Always re-extract URL at save time regardless of input events
+  const xhsRaw = (document.getElementById('xhs-link') && document.getElementById('xhs-link').value) || '';
+  const xhsMatch = xhsRaw.match(/https?:\/\/[^\s\u300b\]\uff09)"']+/);
+  const xhsLink = xhsMatch ? xhsMatch[0] : null;
+  if (xhsLink && document.getElementById('xhs-link')) document.getElementById('xhs-link').value = xhsLink;
   const firstImg = imgs[0] || xhsLink || null;
   const bt = o.tags || [];
   const sourceId = 'src_' + Date.now();
