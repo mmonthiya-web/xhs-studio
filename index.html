@@ -846,6 +846,9 @@ function openGroup(sourceId) {
   const f = [];
   const add = (l, v) => { if (v) f.push(`<div class="det-row"><div class="det-label">${l}</div><div class="det-val">${esc(v)}</div></div>`); };
   add('标题', rep.title); add('摘要', getField('inspire','note')); add('关键词', getField('inspire','keywords'));
+  // XHS link row
+  const xhsUrl = imgs.find(s => s.startsWith('http') && !s.includes('supabase.co/storage'));
+  if (xhsUrl) f.unshift(`<div class="det-row"><div class="det-label">小红书链接</div><div class="det-val"><a href="${xhsUrl}" target="_blank" rel="noopener" style="color:var(--accent);word-break:break-all">${xhsUrl}</a></div></div>`);
   add('Hook', getField('hooks','hook')); add('情绪触发', getField('hooks','emotion')); add('触发原因', getField('hooks','emotion_why'));
   add('标题套路', getField('titles','title_pattern')); add('套路分析', getField('titles','title_why'));
   add('文案公式', getField('formulas','formula') || getField('breakdown','formula'));
@@ -1152,6 +1155,9 @@ function openDet(id) {
   }
 
   add('标题', it.title); add('摘要', it.note); add('关键词', it.keywords);
+  if (it.img_data && it.img_data.startsWith('http') && !it.img_data.includes('supabase.co/storage')) {
+    f.unshift(`<div class="det-row"><div class="det-label">小红书链接</div><div class="det-val"><a href="${it.img_data}" target="_blank" rel="noopener" style="color:var(--accent);word-break:break-all">${it.img_data}</a></div></div>`);
+  }
   add('Hook', it.hook); add('情绪触发', it.emotion); add('触发原因', it.emotion_why);
   add('标题套路', it.title_pattern); add('互动技巧', it.interaction);
   add('CTA', it.cta); add('CTA 目标', it.cta_goal); add('适用场景', it.cta_scene);
