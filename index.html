@@ -1037,8 +1037,14 @@ function tryParse() {
   const pe = document.getElementById('jerr'), pp = document.getElementById('jpv'), sb2 = document.getElementById('dosave');
   if (!raw) { pe.innerHTML = '<div class="err">请粘贴 JSON 内容</div>'; return; }
   try {
-    let s = raw.replace(/[\u201C\u201D]/g,'"').replace(/[\u2018\u2019]/g,"'");
-    s = s.replace(/^```(?:json)?\s*/,'').replace(/\s*```$/,'').trim();
+    let s = raw
+      .replace(/[\u201C\u201D\u300C\u300D]/g, '"')  // 全角引号
+      .replace(/[\u2018\u2019\u300E\u300F]/g, "'")  // 全角单引号
+      .replace(/\uff1a/g, ':')   // 全角冒号：
+      .replace(/\uff0c/g, ',')   // 全角逗号，
+      .replace(/^```(?:json)?\s*/m, '').replace(/\s*```$/m, '')
+      .trim();
+    // Find JSON object boundaries
     if (!s.startsWith('{')) {
       const start = s.indexOf('{'); const end = s.lastIndexOf('}');
       if (start !== -1 && end !== -1) s = s.slice(start, end + 1);
