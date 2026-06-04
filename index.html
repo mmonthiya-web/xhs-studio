@@ -35,6 +35,25 @@
   --serif: 'Noto Serif SC', serif;
   --sans: 'Noto Sans SC', sans-serif;
 }
+[data-theme="light"] {
+  --bg: #f5f2ee;
+  --bg2: #ffffff;
+  --bg3: #ede9e3;
+  --border: #ddd8d0;
+  --border2: #c8c0b4;
+  --text: #1a1714;
+  --text2: #5c554c;
+  --text3: #9e958a;
+  --accent: #b5693a;
+  --accent2: #c97d4e;
+  --accent-bg: #f5e8dc;
+  --purple: #6b5ca5;
+  --purple-bg: #ede9f8;
+  --green: #3d7a5a;
+  --green-bg: #dff0e8;
+  --red: #a84040;
+  --red-bg: #fdeaea;
+}
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { font-size: 14px; }
 body { background: var(--bg); color: var(--text); font-family: var(--sans); min-height: 100vh; overflow-x: hidden; }
@@ -291,6 +310,64 @@ a { color: var(--accent); text-decoration: none; }
 
 .ai-step { font-size: 13px; color: var(--text2); padding: 8px 0; display: flex; align-items: center; gap: 6px; }
 
+/* ── Tag filter bar ── */
+.tag-filter-bar {
+  display: flex; align-items: center; gap: 6px; padding: 8px 16px;
+  border-bottom: 1px solid var(--border); background: var(--bg2);
+  flex-shrink: 0; overflow-x: auto; scrollbar-width: none;
+}
+.tag-filter-bar::-webkit-scrollbar { display: none; }
+.tf-chip {
+  flex-shrink: 0; font-size: 11px; padding: 3px 10px; border-radius: 999px;
+  border: 1px solid var(--border2); background: transparent; color: var(--text2);
+  cursor: pointer; transition: all .12s; white-space: nowrap; font-family: var(--mono);
+}
+.tf-chip:hover { border-color: var(--accent); color: var(--accent); }
+.tf-chip.on { background: var(--accent-bg); color: var(--accent); border-color: var(--accent); }
+
+/* ── Batch select ── */
+.card.sel, .trow.sel { border-color: var(--accent) !important; background: var(--accent-bg); }
+.card .sel-box, .trow .sel-box {
+  display: none; position: absolute; top: 7px; left: 7px;
+  width: 18px; height: 18px; border-radius: 4px;
+  border: 1.5px solid var(--border2); background: var(--bg3);
+  z-index: 3; align-items: center; justify-content: center; font-size: 11px;
+}
+.batch-mode .card .sel-box, .batch-mode .trow .sel-box { display: flex; }
+.card.sel .sel-box, .trow.sel .sel-box { background: var(--accent); border-color: var(--accent); color: #1a1008; }
+.batch-bar {
+  display: none; align-items: center; gap: 8px; padding: 8px 16px;
+  background: var(--accent-bg); border-bottom: 1px solid var(--accent);
+  flex-shrink: 0; font-size: 13px; color: var(--accent);
+}
+.batch-bar.show { display: flex; }
+.batch-bar .bc { margin-left: auto; display: flex; gap: 6px; }
+
+/* ── Onboarding ── */
+.onboarding {
+  position: fixed; inset: 0; background: rgba(0,0,0,.88);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 600; padding: 24px; backdrop-filter: blur(4px);
+}
+.ob-card {
+  background: var(--bg2); border: 1px solid var(--border2);
+  border-radius: 12px; width: 100%; max-width: 460px; padding: 28px;
+  animation: obIn .3s ease;
+}
+@keyframes obIn { from { opacity:0; transform:scale(.96); } to { opacity:1; transform:scale(1); } }
+.ob-title { font-family: var(--serif); font-size: 20px; font-weight: 600; margin-bottom: 6px; }
+.ob-sub { font-size: 13px; color: var(--text2); margin-bottom: 22px; line-height: 1.6; }
+.ob-steps { display: flex; flex-direction: column; gap: 14px; margin-bottom: 24px; }
+.ob-step { display: flex; gap: 12px; align-items: flex-start; }
+.ob-num {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--accent); color: #1a1008;
+  font-size: 13px; font-weight: 600; font-family: var(--mono);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.ob-text { font-size: 13px; color: var(--text); line-height: 1.65; padding-top: 4px; }
+.ob-text small { color: var(--text2); font-size: 12px; display: block; margin-top: 2px; }
+
 /* ── Mobile ── */
 @media (max-width: 640px) {
   .shell { flex-direction: column; height: 100vh; }
@@ -421,7 +498,10 @@ a { color: var(--accent); text-decoration: none; }
       <button class="sb-btn primary" onclick="openImport()">✦ 导入分析结果</button>
       <button class="sb-btn" onclick="openAddComment()"><span>💬</span><span> 添加高频问题</span></button>
       <button class="sb-btn" onclick="openTagMgr()"><span>🏷</span><span> 管理标签</span></button>
-      <button class="sb-btn" onclick="openConfig()"><span>⚙</span><span> 配置</span></button>
+      <div style="display:flex;gap:4px">
+        <button class="sb-btn" style="flex:1" onclick="openConfig()"><span>⚙</span><span> 配置</span></button>
+        <button class="sb-btn" id="theme-btn" style="width:36px;flex-shrink:0;font-size:15px;padding:0" onclick="toggleTheme()" title="切换明暗模式">☀️</button>
+      </div>
     </div>
   </div>
 
@@ -430,9 +510,40 @@ a { color: var(--accent); text-decoration: none; }
     <div class="topbar">
       <div class="topbar-title" id="view-title">全部</div>
       <input type="text" id="sq" placeholder="搜索…" oninput="renderView()">
+      <button onclick="toggleBatchMode()" id="batch-toggle-btn" style="background:var(--bg3);color:var(--text2);border:1px solid var(--border2);padding:6px 10px;border-radius:var(--radius-sm);font-size:13px;cursor:pointer;white-space:nowrap">☑ 批量</button>
       <button class="btn-import" onclick="openImport()">✦ 导入</button>
     </div>
+    <div class="batch-bar" id="batch-bar">
+      <span id="batch-count">已选 0 项</span>
+      <div class="bc">
+        <button onclick="selectAll()" style="font-size:12px;padding:4px 10px;background:var(--bg3);color:var(--text2);border:1px solid var(--border2);border-radius:var(--radius-sm);cursor:pointer">全选</button>
+        <button onclick="batchDelete()" style="font-size:12px;padding:4px 10px;background:var(--red-bg);color:var(--red);border:1px solid var(--red);border-radius:var(--radius-sm);cursor:pointer">删除所选</button>
+        <button onclick="toggleBatchMode()" style="font-size:12px;padding:4px 10px;background:var(--bg3);color:var(--text2);border:1px solid var(--border2);border-radius:var(--radius-sm);cursor:pointer">取消</button>
+      </div>
+    </div>
+    <div class="tag-filter-bar" id="tag-filter-bar" style="display:none"></div>
     <div class="view" id="vw"></div>
+  </div>
+</div>
+
+
+<!-- Onboarding -->
+<div class="onboarding" id="onboarding" style="display:none">
+  <div class="ob-card">
+    <div class="ob-title">👋 欢迎使用内容工作台</div>
+    <div class="ob-sub">三步开始你的小红书选题库，整个流程只需要 2 分钟。</div>
+    <div class="ob-steps">
+      <div class="ob-step"><div class="ob-num">1</div><div class="ob-text">截取小红书爆款帖子截图<small>保存你觉得有参考价值的帖子图片，或复制帖子链接</small></div></div>
+      <div class="ob-step"><div class="ob-num">2</div><div class="ob-text">把截图发给 Claude，附上分析指令<small>点击「导入」→「一键发给 Claude」自动带上分析提示词</small></div></div>
+      <div class="ob-step"><div class="ob-num">3</div><div class="ob-text">把 Claude 返回的 JSON 粘贴进「导入」窗口<small>内容自动分发到灵感、Hooks、标题库等各个模块</small></div></div>
+      <div class="ob-step"><div class="ob-num">4</div><div class="ob-text">点开任意帖子 → 「基于这个帖子创作」<small>AI 帮你生成新选题方向 + 完整创作大纲，一键导出文档</small></div></div>
+    </div>
+    <button onclick="closeOnboarding()" style="width:100%;padding:12px;background:var(--accent);color:#1a1008;border:none;border-radius:var(--radius-sm);font-size:14px;font-weight:600;cursor:pointer">开始使用 →</button>
+    <div style="text-align:center;margin-top:10px">
+      <label style="font-size:12px;color:var(--text3);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px">
+        <input type="checkbox" id="ob-no-show" style="width:auto;background:none;border:none;padding:0"> 不再显示
+      </label>
+    </div>
   </div>
 </div>
 
@@ -469,6 +580,7 @@ a { color: var(--accent); text-decoration: none; }
   <button class="mobile-more-btn" onclick="openAddComment();toggleMoreMenu()">+ 添加问题</button>
   <button class="mobile-more-btn" onclick="openTagMgr();toggleMoreMenu()">🏷 标签</button>
   <button class="mobile-more-btn" onclick="openConfig();toggleMoreMenu()">⚙ 配置</button>
+  <button class="mobile-more-btn" onclick="toggleTheme();toggleMoreMenu()" id="mobile-theme-btn">☀️ 切换主题</button>
 </div>
 
 <script>
@@ -488,6 +600,9 @@ let mode = 'personal';
 let cur = 'all';
 let tags = [];
 let allItems = [];
+let activeTagFilter = null;
+let batchModeOn = false;
+let selectedIds = new Set();
 
 const MODULES = ['inspire','hooks','titles','cta','breakdown','formulas','comments'];
 const LBL = {all:'全部',inspire:'灵感',hooks:'Hooks',titles:'标题库',cta:'CTA',breakdown:'爆款拆解',formulas:'文案公式',comments:'高频问题'};
@@ -495,6 +610,10 @@ const MOD_ICON = {inspire:'💡',hooks:'🪝',titles:'T',cta:'☞',breakdown:'�
 
 // ── Init ──
 window.onload = async () => {
+  // Apply saved theme immediately
+  const savedTheme = localStorage.getItem('theme') || 'dark';
+  applyTheme(savedTheme);
+
   const url = localStorage.getItem('sb_url') || DEFAULT_URL;
   const key = localStorage.getItem('sb_key') || DEFAULT_KEY;
   if (!url || !key) { showConfig(); return; }
@@ -508,6 +627,7 @@ async function initSupabase(url, key) {
     await loadAll();
     document.getElementById('shell').style.display = 'flex';
     showLoading(false);
+    maybeShowOnboarding();
   } catch(e) {
     showLoading(false);
     showConfig('连接失败：' + e.message);
@@ -523,6 +643,7 @@ async function loadAll() {
   allItems = itemsRes.data || [];
   tags = (tagsRes.data || []).map(t => t.name);
   syncBadges();
+  renderTagFilterBar();
   renderView();
 }
 
@@ -566,10 +687,27 @@ function filteredItems() {
 // ── Nav ──
 function go(m) {
   cur = m;
+  activeTagFilter = null;
   document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('on'));
   document.getElementById('ni-' + m).classList.add('on');
   document.getElementById('view-title').textContent = LBL[m];
   document.getElementById('sq').value = '';
+  renderTagFilterBar();
+  renderView();
+}
+
+function renderTagFilterBar() {
+  const bar = document.getElementById('tag-filter-bar');
+  if (!tags.length) { bar.style.display = 'none'; return; }
+  bar.style.display = 'flex';
+  bar.innerHTML = '<span style="font-size:11px;color:var(--text3);font-family:var(--mono);white-space:nowrap;padding:2px 0">标签：</span>' +
+    tags.map(t => `<button class="tf-chip${activeTagFilter===t?' on':''}" onclick="setTagFilter('${t.replace(/'/g,"\'")}')">＃${t}</button>`).join('') +
+    (activeTagFilter ? `<button class="tf-chip" onclick="setTagFilter(null)" style="color:var(--red);border-color:var(--red)">✕ 清除</button>` : '');
+}
+
+function setTagFilter(t) {
+  activeTagFilter = t;
+  renderTagFilterBar();
   renderView();
 }
 
@@ -589,6 +727,7 @@ function renderView() {
   let items = filteredItems();
   if (cur !== 'all') items = items.filter(it => it.module === cur);
   if (q) items = items.filter(it => JSON.stringify(it).toLowerCase().includes(q));
+  if (activeTagFilter) items = items.filter(it => (it.tags||[]).includes(activeTagFilter));
 
   const v = document.getElementById('vw');
   if (!items.length) {
@@ -643,9 +782,16 @@ function renderCard(it, isGroup) {
   const sourceId = it.source_id || it.id;
   const clickFn = isGroup ? `openGroup('${sourceId}')` : `openDet('${it.id}')`;
   const delFn = isGroup ? `delGroup('${sourceId}')` : `delItem('${it.id}')`;
-  return `<div class="card" onclick="${clickFn}">
+  const isLink = it.img_data && (it.img_data.startsWith('http://') || it.img_data.startsWith('https://')) && !it.img_data.includes('supabase.co/storage');
+  const imgEl = it.img_data && !isLink
+    ? `<img class="card-img" src="${it.img_data}" loading="lazy">`
+    : isLink
+    ? `<div class="card-noimg" style="flex-direction:column;gap:6px;padding:12px;font-size:11px;text-align:center"><span style="font-size:22px">🔗</span><span style="color:var(--accent);word-break:break-all;overflow:hidden;max-height:40px">${esc(it.img_data.replace('https://','').slice(0,36))}…</span></div>`
+    : `<div class="card-noimg">📄</div>`;
+  return `<div class="card${selectedIds.has(it.id)?' sel':''}" onclick="${batchModeOn?`toggleSel('${it.id}')`:clickFn}" data-id="${it.id}">
+    <div class="sel-box">${selectedIds.has(it.id)?'✓':''}</div>
     <button class="del-btn" onclick="event.stopPropagation();${delFn}" aria-label="删除">✕</button>
-    <img class="card-img" src="${it.img_data}" loading="lazy">
+    ${imgEl}
     <div class="card-body">
       <div class="card-title">${esc(it.title || '—')}</div>
       <div class="tags">${tagHtml}</div>
@@ -662,7 +808,8 @@ function renderTrow(it, isGroup) {
   const sourceId = it.source_id || it.id;
   const clickFn = isGroup ? `openGroup('${sourceId}')` : `openDet('${it.id}')`;
   const delFn = isGroup ? `delGroup('${sourceId}')` : `delItem('${it.id}')`;
-  return `<div class="trow" onclick="${clickFn}">
+  return `<div class="trow${selectedIds.has(it.id)?' sel':''}" onclick="${batchModeOn?`toggleSel('${it.id}')`:clickFn}" data-id="${it.id}">
+    <div class="sel-box">${selectedIds.has(it.id)?'✓':''}</div>
     <button class="del-btn" onclick="event.stopPropagation();${delFn}" aria-label="删除">✕</button>
     <div class="trow-main">${esc(main)}</div>
     ${sub ? `<div class="trow-sub">${esc(sub)}</div>` : ''}
@@ -741,26 +888,16 @@ CTA: ${getField('cta','cta') || ''} (目标: ${getField('cta','cta_goal') || ''}
         复制下方提示词 → 发给 Claude → 选一个选题方向 → 让 Claude 生成大纲
       </div>
       <div style="background:var(--bg2);border-radius:var(--radius-sm);padding:10px;font-size:11px;color:var(--text2);font-family:var(--mono);line-height:1.7;max-height:160px;overflow-y:auto;white-space:pre-wrap" id="prompt-box">${esc(prompt)}</div>
-      <button onclick="copyPrompt()" style="margin-top:8px;width:100%;padding:8px;background:var(--accent);color:#1a1008;border:none;border-radius:var(--radius-sm);font-size:13px;font-weight:500;cursor:pointer;font-family:var(--font-sans)" id="copy-btn">复制提示词</button>
+      <div style="display:flex;gap:6px;margin-top:8px">
+        <button onclick="copyPrompt()" style="flex:1;padding:8px;background:var(--accent);color:#1a1008;border:none;border-radius:var(--radius-sm);font-size:13px;font-weight:500;cursor:pointer" id="copy-btn">复制提示词</button>
+        <button onclick="exportPromptTxt()" style="flex:1;padding:7px;background:var(--bg2);color:var(--text2);border:1px solid var(--border2);border-radius:var(--radius-sm);font-size:12px;cursor:pointer">⬇ 导出 .txt</button>
+      </div>
     </div>`;
 }
 
 function copyPrompt() {
   const { rep, getField } = window._curGrp;
-  const prompt = `请根据以下小红书爆款帖子的拆解数据，先给我5个可以套用相同结构的新选题方向，再让我选一个生成完整创作大纲。
-
-【原帖拆解数据】
-标题: ${rep.title || ''}
-摘要: ${getField('inspire','note') || ''}
-情绪触发: ${getField('hooks','emotion') || ''} - ${getField('hooks','emotion_why') || ''}
-标题套路: ${getField('titles','title_pattern') || ''} - ${getField('titles','title_why') || ''}
-文案公式: ${getField('formulas','formula') || getField('breakdown','formula') || ''}
-CTA: ${getField('cta','cta') || ''} (目标: ${getField('cta','cta_goal') || ''})
-互动技巧: ${getField('breakdown','interaction') || ''}
-
-【第一步】先输出5个选题方向，每个包含: 方向名称、一句话描述、目标受众。
-【第二步】我选完后，你再生成完整大纲: 3个标题备选 + 开头Hook + 内容结构 + CTA + 创作注意事项。`;
-
+  const prompt = buildCreationPrompt(rep, getField);
   navigator.clipboard.writeText(prompt).then(() => {
     const btn = document.getElementById('copy-btn');
     if (btn) { btn.textContent = '✓ 已复制'; setTimeout(() => { btn.textContent = '复制提示词'; }, 2000); }
@@ -790,6 +927,10 @@ function openImport() {
       <div>② 说「分析这张截图，输出选题库 JSON」</div>
       <div>③ 复制 JSON 粘贴到下方，确认保存</div>
     </div>
+    <label class="field-label">小红书帖子链接（替代图片，节省空间）</label>
+    <input type="text" id="xhs-link" placeholder="https://www.xiaohongshu.com/explore/..." style="margin-bottom:4px">
+    <div style="font-size:11px;color:var(--text3);margin-bottom:10px">填写链接后无需上传图片，封面将显示为链接卡片</div>
+
     <div class="img-drop" id="idz" onclick="document.getElementById('hfi').click()">
       <span class="di">🖼</span>
       <span>可选：上传截图存档（支持多张）</span><br>
@@ -898,10 +1039,36 @@ function tryParse() {
   }
 }
 
+function jumpToClaude() {
+  const analysisPrompt = `请分析这张小红书截图，提取以下信息并以 JSON 格式输出（只输出 JSON，不要其他文字）：
+
+{
+  "title": "帖子标题",
+  "summary": "内容摘要（1-2句）",
+  "keywords": "3-5个关键词，逗号分隔",
+  "hook": "开头第一句Hook",
+  "emotion": "触发的核心情绪",
+  "emotionWhy": "为什么能触发这个情绪",
+  "titlePattern": "标题套路（如：痛点型/好奇型/数字型）",
+  "titleWhy": "这个标题为什么有效",
+  "formula": "文案公式（如：痛点+解决方案+结果）",
+  "formulaName": "公式名称",
+  "formulaEx": "用这个公式写一个示例",
+  "cta": "行动号召文字",
+  "ctaGoal": "CTA的目标",
+  "ctaScene": "适用场景",
+  "interaction": "互动设计技巧",
+  "tags": ["标签1", "标签2"]
+}`;
+  const encoded = encodeURIComponent(analysisPrompt);
+  window.open('https://claude.ai/new?q=' + encoded, '_blank');
+}
+
 async function doSave() {
   const o = window._iObj; if (!o) return;
   const imgs = (window._iImgs || []).filter(Boolean);
-  const firstImg = imgs[0] || null;
+  const xhsLink = (document.getElementById('xhs-link') && document.getElementById('xhs-link').value.trim()) || null;
+  const firstImg = imgs[0] || xhsLink || null;
   const bt = o.tags || [];
   const sourceId = 'src_' + Date.now();
   const base = { mode, tags: bt, source_id: sourceId, ...(firstImg ? { img_data: firstImg } : {}) };
@@ -1000,6 +1167,38 @@ function copyAnswer(text) {
   navigator.clipboard.writeText(text).catch(() => {});
 }
 
+function jumpToClaudeWithPrompt() {
+  const { rep, getField } = window._curGrp;
+  const prompt = buildCreationPrompt(rep, getField);
+  window.open('https://claude.ai/new?q=' + encodeURIComponent(prompt), '_blank');
+}
+
+function exportPromptTxt() {
+  const { rep, getField } = window._curGrp;
+  const prompt = buildCreationPrompt(rep, getField);
+  const blob = new Blob([prompt], { type: 'text/plain;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = (rep.title || '创作大纲').slice(0,20) + '_创作指令.txt';
+  a.click();
+}
+
+function buildCreationPrompt(rep, getField) {
+  return `请根据以下小红书爆款帖子的拆解数据，先给我5个可以套用相同结构的新选题方向，再让我选一个生成完整创作大纲。
+
+【原帖拆解数据】
+标题: ${rep.title || ''}
+摘要: ${getField('inspire','note') || ''}
+情绪触发: ${getField('hooks','emotion') || ''} - ${getField('hooks','emotion_why') || ''}
+标题套路: ${getField('titles','title_pattern') || ''} - ${getField('titles','title_why') || ''}
+文案公式: ${getField('formulas','formula') || getField('breakdown','formula') || ''}
+CTA: ${getField('cta','cta') || ''} (目标: ${getField('cta','cta_goal') || ''})
+互动技巧: ${getField('breakdown','interaction') || ''}
+
+【第一步】先输出5个选题方向，每个包含: 方向名称、一句话描述、目标受众。
+【第二步】我选完后，你再生成完整大纲: 3个标题备选 + 开头Hook + 内容结构 + CTA + 创作注意事项。`;
+}
+
 // ── Add comment manually ──
 function openAddComment() {
   setModal(`
@@ -1068,6 +1267,90 @@ async function addTag() {
   if (error) { alert('添加失败：' + error.message); return; }
   tags.push(v);
   openTagMgr();
+}
+
+// ── Batch mode ──
+function toggleBatchMode() {
+  batchModeOn = !batchModeOn;
+  selectedIds.clear();
+  const vw = document.getElementById('vw');
+  if (batchModeOn) vw.classList.add('batch-mode');
+  else vw.classList.remove('batch-mode');
+  document.getElementById('batch-bar').classList.toggle('show', batchModeOn);
+  const btn = document.getElementById('batch-toggle-btn');
+  if (btn) { btn.style.background = batchModeOn ? 'var(--accent-bg)' : 'var(--bg3)'; btn.style.color = batchModeOn ? 'var(--accent)' : 'var(--text2)'; }
+  updateBatchCount();
+  renderView();
+}
+
+function toggleSel(id) {
+  if (selectedIds.has(id)) selectedIds.delete(id);
+  else selectedIds.add(id);
+  updateBatchCount();
+  renderView();
+}
+
+function updateBatchCount() {
+  const el = document.getElementById('batch-count');
+  if (el) el.textContent = '已选 ' + selectedIds.size + ' 项';
+}
+
+function selectAll() {
+  const q = (document.getElementById('sq').value || '').toLowerCase();
+  let items = filteredItems();
+  if (cur !== 'all') items = items.filter(it => it.module === cur);
+  if (q) items = items.filter(it => JSON.stringify(it).toLowerCase().includes(q));
+  if (activeTagFilter) items = items.filter(it => (it.tags||[]).includes(activeTagFilter));
+  items.forEach(it => selectedIds.add(it.id));
+  updateBatchCount();
+  renderView();
+}
+
+async function batchDelete() {
+  if (!selectedIds.size) { alert('请先选择要删除的内容'); return; }
+  if (!confirm(`确认删除选中的 ${selectedIds.size} 条内容？`)) return;
+  showLoading(true);
+  const ids = [...selectedIds];
+  await sb.from('items').delete().in('id', ids);
+  allItems = allItems.filter(x => !selectedIds.has(x.id));
+  selectedIds.clear();
+  showLoading(false);
+  toggleBatchMode();
+  syncBadges();
+  renderView();
+}
+
+// ── Theme ──
+function toggleTheme() {
+  const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+  const next = isLight ? 'dark' : 'light';
+  applyTheme(next);
+  localStorage.setItem('theme', next);
+}
+function applyTheme(t) {
+  if (t === 'light') {
+    document.documentElement.setAttribute('data-theme', 'light');
+  } else {
+    document.documentElement.removeAttribute('data-theme');
+  }
+  const icon = t === 'light' ? '🌙' : '☀️';
+  const label = t === 'light' ? '🌙 切换主题' : '☀️ 切换主题';
+  const btn = document.getElementById('theme-btn');
+  const mBtn = document.getElementById('mobile-theme-btn');
+  if (btn) btn.textContent = icon;
+  if (mBtn) mBtn.textContent = label;
+}
+
+// ── Onboarding ──
+function maybeShowOnboarding() {
+  if (localStorage.getItem('ob_done')) return;
+  document.getElementById('onboarding').style.display = 'flex';
+}
+function closeOnboarding() {
+  if (document.getElementById('ob-no-show').checked) {
+    localStorage.setItem('ob_done', '1');
+  }
+  document.getElementById('onboarding').style.display = 'none';
 }
 
 // ── Utils ──
