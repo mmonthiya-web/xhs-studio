@@ -744,6 +744,8 @@ function renderView() {
   }
 
   // 全部视图：按 source_id 分组，每个帖子只显示一张卡
+  const hasRealImg = it => it.img_data && !( it.img_data.startsWith('http') && !it.img_data.includes('supabase.co/storage') );
+
   if (cur === 'all') {
     const groups = {};
     items.forEach(it => {
@@ -752,16 +754,22 @@ function renderView() {
       groups[key].push(it);
     });
     const representatives = Object.values(groups).map(grp => {
-      // 优先取有图片的、模块为 inspire 的作为代表
       return grp.find(x => x.img_data && x.module === 'inspire')
           || grp.find(x => x.img_data)
           || grp.find(x => x.module === 'inspire')
           || grp[0];
     });
-    const hasRealImg = it => it.img_data && !( it.img_data.startsWith('http') && !it.img_data.includes('supabase.co/storage') );
-        ? xhsLinkCard(it.img_data, 'margin-bottom:13px')
+    const withImg = representatives.filter(hasRealImg);
+    const noImg = representatives.filter(it => !hasRealImg(it));
+    let html = '';
+    if (withImg.length) html += `<div class="grid">${withImg.map(it => renderCard(it, true)).join('')}</div>`;
+    if (noImg.length) html += `<div style="margin-top:${withImg.length ? '12px' : '0'}">${noImg.map(it => renderTrow(it, true)).join('')}</div>`;
+    v.innerHTML = html;
+    return;
+  }
 
-  const hasRealImg = it => it.img_data && !( it.img_data.startsWith('http') && !it.img_data.includes('supabase.co/storage') );
+  if (cur === 'formulas') { v.innerHTML = items.map(renderFB).join(''); return; }
+
   const withImg = items.filter(hasRealImg);
   const noImg = items.filter(it => !hasRealImg(it));
   let html = '';
@@ -1152,11 +1160,7 @@ function openDet(id) {
   const tagHtml = (it.tags || []).map(t => `<span class="tag tag-custom">${esc(t)}</span>`).join('');
   setModal(`
     <div class="modal-h">${esc(it.title || it.hook || it.cta || it.formula_name || '详情')} ${modTag}</div>
-    ${it.img_data ? (
-      (it.img_data.startsWith('http') && !it.img_data.includes('supabase.co/storage'))
-        ? '<a href="' + it.img_data + '" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:10px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:13px;text-decoration:none;color:var(--text)"><span style=\"font-size:20px;flex-shrink:0\">\uD83D\uDD17</span><div style=\"min-width:0\"><div style=\"font-size:11px;color:var(--text3);margin-bottom:2px\">\u5c0f\u7ea2\u4e66\u539f\u5e16</div><div style=\"font-size:12px;color:var(--accent);overflow:hidden;text-overflow:ellipsis;white-space:nowrap\">' + it.img_data + '</div></div><span style=\"margin-left:auto;font-size:11px;color:var(--text3);flex-shrink:0\">\u6253\u5f00 \u2197</span></a>'
-        : `<img class="preview" src="${it.img_data}" style="cursor:zoom-in" onclick="openLightbox('${it.img_data.replace(/'/g,"\\'")}'">`
-    ) : ''}
+    ${it.img_data ? ( (it.img_data.startsWith('http') && !it.img_data.includes('supabase.co/storage')) ? xhsLinkCard(it.img_data, 'margin-bottom:13px') : `<img class="preview" src="${it.img_data}" style="cursor:zoom-in" onclick="openLightbox('${it.img_data.replace(/'/g,"\\'")}')">` ) : ''}
     ${it.formula ? `<div class="det-formula">${esc(it.formula)}</div>` : ''}
     ${it.formula_ex ? `<div class="det-row"><div class="det-label">公式示例</div><div class="det-val">${esc(it.formula_ex)}</div></div>` : ''}
     ${f.join('')}
