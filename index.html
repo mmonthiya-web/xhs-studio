@@ -867,6 +867,7 @@ function openGroup(sourceId) {
     <div class="modal-actions">
       <button class="btn-cancel" onclick="delGroup('${sourceId}');closeModal()">删除</button>
       <button class="btn-preview" onclick="showCreationPrompt()">✦ 基于这个帖子创作</button>
+      <button class="btn-preview" onclick="openEditGroup('${sourceId}')">✎ 编辑</button>
       <button class="btn-ok" onclick="closeModal()">关闭</button>
     </div>
   `);
@@ -1193,7 +1194,10 @@ function openDet(id) {
     ${f.join('')}
     <div class="tags" style="margin-top:10px">${tagHtml}</div>
     <div style="font-size:11px;color:var(--text3);margin-top:10px;font-family:var(--mono)">${fmtDate(it.created_at)}</div>
-    <div class="modal-actions"><button class="btn-ok" onclick="closeModal()">关闭</button></div>
+    <div class="modal-actions">
+      <button class="btn-preview" onclick="openEditItem('${it.id}')">✎ 编辑</button>
+      <button class="btn-ok" onclick="closeModal()">关闭</button>
+    </div>
   `);
 }
 
@@ -1326,6 +1330,147 @@ function xhsLinkCard(url, extraStyle) {
     + '</div>'
     + '<span style="font-size:11px;color:var(--accent);flex-shrink:0">\u6253\u5f00 \u2197</span>'
     + '</a>';
+}
+
+
+// ── Edit ──
+function openEditGroup(sourceId) {
+  const grp = allItems.filter(it => (it.source_id || it.id) === sourceId && it.mode === mode);
+  if (!grp.length) return;
+  const rep = grp.find(x => x.module === 'inspire') || grp[0];
+  const getField = (mod, field) => { const it = grp.find(x => x.module === mod); return it ? (it[field] || '') : ''; };
+  const xhsUrl = grp.map(x => x.xhs_url).find(Boolean) || '';
+
+  setModal(`
+    <div class="modal-h">✎ 编辑帖子</div>
+    <label class="field-label">小红书链接</label>
+    <input type="text" id="e-xhs" value="${esc(xhsUrl)}" placeholder="https://www.xiaohongshu.com/..." oninput="cleanXhsInput(this)" onpaste="setTimeout(()=>cleanXhsInput(this),0)">
+    <label class="field-label">标题</label>
+    <input type="text" id="e-title" value="${esc(rep.title || '')}">
+    <label class="field-label">摘要</label>
+    <textarea id="e-note">${esc(getField('inspire','note'))}</textarea>
+    <label class="field-label">关键词</label>
+    <input type="text" id="e-keywords" value="${esc(getField('inspire','keywords'))}">
+    <label class="field-label">Hook</label>
+    <input type="text" id="e-hook" value="${esc(getField('hooks','hook'))}">
+    <label class="field-label">情绪触发</label>
+    <input type="text" id="e-emotion" value="${esc(getField('hooks','emotion'))}">
+    <label class="field-label">触发原因</label>
+    <textarea id="e-emotion-why" style="min-height:56px">${esc(getField('hooks','emotion_why'))}</textarea>
+    <label class="field-label">标题套路</label>
+    <input type="text" id="e-title-pattern" value="${esc(getField('titles','title_pattern'))}">
+    <label class="field-label">套路分析</label>
+    <textarea id="e-title-why" style="min-height:56px">${esc(getField('titles','title_why'))}</textarea>
+    <label class="field-label">文案公式</label>
+    <input type="text" id="e-formula" value="${esc(getField('formulas','formula') || getField('breakdown','formula'))}">
+    <label class="field-label">CTA</label>
+    <input type="text" id="e-cta" value="${esc(getField('cta','cta'))}">
+    <label class="field-label">CTA 目标</label>
+    <input type="text" id="e-cta-goal" value="${esc(getField('cta','cta_goal'))}">
+    <label class="field-label">互动技巧</label>
+    <textarea id="e-interaction" style="min-height:56px">${esc(getField('breakdown','interaction'))}</textarea>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="openGroup('${sourceId}')">取消</button>
+      <button class="btn-ok" onclick="saveEditGroup('${sourceId}')">保存</button>
+    </div>
+  `);
+}
+
+async function saveEditGroup(sourceId) {
+  const grp = allItems.filter(it => (it.source_id || it.id) === sourceId && it.mode === mode);
+  if (!grp.length) return;
+
+  const xhsRaw = document.getElementById('e-xhs').value || '';
+  const xhsMatch = xhsRaw.match(/https?:\/\/[^\s\u300b\]\uff09)"']+/);
+  const xhsUrl = xhsMatch ? xhsMatch[0] : null;
+
+  const fields = {
+    title:         document.getElementById('e-title').value.trim(),
+    note:          document.getElementById('e-note').value.trim(),
+    keywords:      document.getElementById('e-keywords').value.trim(),
+    hook:          document.getElementById('e-hook').value.trim(),
+    emotion:       document.getElementById('e-emotion').value.trim(),
+    emotion_why:   document.getElementById('e-emotion-why').value.trim(),
+    title_pattern: document.getElementById('e-title-pattern').value.trim(),
+    title_why:     document.getElementById('e-title-why').value.trim(),
+    formula:       document.getElementById('e-formula').value.trim(),
+    cta:           document.getElementById('e-cta').value.trim(),
+    cta_goal:      document.getElementById('e-cta-goal').value.trim(),
+    interaction:   document.getElementById('e-interaction').value.trim(),
+  };
+
+  showLoading(true);
+  // Update each row in the group with relevant fields + xhs_url
+  for (const it of grp) {
+    const patch = { xhs_url: xhsUrl };
+    if (it.module === 'inspire')   Object.assign(patch, { title: fields.title, note: fields.note, keywords: fields.keywords });
+    if (it.module === 'hooks')     Object.assign(patch, { hook: fields.hook, emotion: fields.emotion, emotion_why: fields.emotion_why });
+    if (it.module === 'titles')    Object.assign(patch, { title: fields.title, title_pattern: fields.title_pattern, title_why: fields.title_why });
+    if (it.module === 'cta')       Object.assign(patch, { cta: fields.cta, cta_goal: fields.cta_goal });
+    if (it.module === 'breakdown') Object.assign(patch, { title: fields.title, note: fields.note, formula: fields.formula, emotion: fields.emotion, interaction: fields.interaction });
+    if (it.module === 'formulas')  Object.assign(patch, { formula: fields.formula });
+    await sb.from('items').update(patch).eq('id', it.id);
+    // Update local cache
+    const idx = allItems.findIndex(x => x.id === it.id);
+    if (idx !== -1) allItems[idx] = { ...allItems[idx], ...patch };
+  }
+  showLoading(false);
+  syncBadges();
+  openGroup(sourceId);
+}
+
+function openEditItem(id) {
+  const it = allItems.find(x => x.id === id);
+  if (!it) return;
+  const xhsUrl = it.xhs_url || '';
+  const fieldMap = {
+    inspire:   [['标题','title','input'],['摘要','note','textarea'],['关键词','keywords','input']],
+    hooks:     [['Hook','hook','input'],['情绪触发','emotion','input'],['触发原因','emotion_why','textarea']],
+    titles:    [['标题','title','input'],['标题套路','title_pattern','input'],['套路分析','title_why','textarea']],
+    cta:       [['CTA','cta','input'],['CTA 目标','cta_goal','input'],['适用场景','cta_scene','input']],
+    breakdown: [['标题','title','input'],['摘要','note','textarea'],['文案公式','formula','input'],['互动技巧','interaction','textarea']],
+    formulas:  [['公式名称','formula_name','input'],['文案公式','formula','input'],['公式示例','formula_ex','textarea']],
+    comments:  [['问题','question','input'],['频率','freq','input'],['回答模板','answer','textarea']],
+  };
+  const rows = (fieldMap[it.module] || []).map(([label, key, tag]) =>
+    `<label class="field-label">${label}</label>` +
+    (tag === 'textarea'
+      ? `<textarea id="ei-${key}" style="min-height:56px">${esc(it[key]||'')}</textarea>`
+      : `<input type="text" id="ei-${key}" value="${esc(it[key]||'')}">`)
+  ).join('');
+
+  setModal(`
+    <div class="modal-h">✎ 编辑</div>
+    <label class="field-label">小红书链接</label>
+    <input type="text" id="ei-xhs" value="${esc(xhsUrl)}" placeholder="https://www.xiaohongshu.com/..." oninput="cleanXhsInput(this)" onpaste="setTimeout(()=>cleanXhsInput(this),0)">
+    ${rows}
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="openDet('${it.id}')">取消</button>
+      <button class="btn-ok" onclick="saveEditItem('${it.id}')">保存</button>
+    </div>
+  `);
+}
+
+async function saveEditItem(id) {
+  const it = allItems.find(x => x.id === id);
+  if (!it) return;
+  const xhsRaw = document.getElementById('ei-xhs').value || '';
+  const xhsMatch = xhsRaw.match(/https?:\/\/[^\s\u300b\]\uff09)"']+/);
+  const patch = { xhs_url: xhsMatch ? xhsMatch[0] : null };
+
+  // Collect all visible fields
+  document.querySelectorAll('[id^="ei-"]').forEach(el => {
+    if (el.id === 'ei-xhs') return;
+    const key = el.id.replace('ei-', '');
+    patch[key] = el.value.trim();
+  });
+
+  showLoading(true);
+  await sb.from('items').update(patch).eq('id', id);
+  const idx = allItems.findIndex(x => x.id === id);
+  if (idx !== -1) allItems[idx] = { ...allItems[idx], ...patch };
+  showLoading(false);
+  openDet(id);
 }
 
 // ── Batch mode ──
