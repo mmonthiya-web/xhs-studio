@@ -772,18 +772,31 @@ window.onload = async () => {
   await initGS();
 };
 
-async function initSupabase(url, key) {
+async function initGS() {
   try {
-    sb = supabase.createClient(url, key);
     showLoading(true);
+    await ensureSheetHeaders();
     await loadAll();
-    document.getElementById('shell').style.display = 'flex';
-    showLoading(false);
-    maybeShowOnboarding();
   } catch(e) {
     showLoading(false);
     showConfig('连接失败：' + e.message);
   }
+}
+
+async function loadAll() {
+  const itemRows = await gsGet(`${ITEMS_SHEET}!A2:Z9999`);
+  allItems = itemRows.map(rowToItem).filter(it => it.id);
+  allItems.sort((a,b) => (b.created_at||'').localeCompare(a.created_at||''));
+  _rowIndex = {};
+  itemRows.forEach((row, i) => { if (row[0]) _rowIndex[row[0]] = i + 2; });
+  const tagRows = await gsGet(`${TAGS_SHEET}!A2:A9999`);
+  tags = tagRows.map(r => r[0]).filter(Boolean);
+  syncBadges();
+  renderTagFilterBar();
+  renderView();
+  document.getElementById('shell').style.display = 'flex';
+  showLoading(false);
+  maybeShowOnboarding();
 }
 
 
