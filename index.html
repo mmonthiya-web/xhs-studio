@@ -791,32 +791,39 @@ async function initSupabase(url, key) {
 // ── Config ──
 function showConfig(err = '') {
   const savedKey = localStorage.getItem('gs_private_key') || '';
-  const displayKey = savedKey ? savedKey.slice(0,40) + '…' : '';
-  setModal(`
-    <div class="modal-h" style="font-family:var(--serif);font-size:18px">内容工作台</div>
-    <p style="font-size:13px;color:var(--text2);margin:4px 0 18px">填入 Google Service Account Private Key 开始使用。<br>信息保存在本地，不会上传到任何地方。</p>
-    <label class="field-label">PRIVATE KEY</label>
-    <textarea id="cfg-key" style="min-height:90px;font-size:11px;font-family:var(--mono)" placeholder="-----BEGIN PRIVATE KEY-----\n...">${savedKey ? savedKey : ''}</textarea>
-    ${err ? `<div style="background:var(--red-bg);color:var(--red);border:1px solid var(--red);border-radius:var(--radius-sm);padding:8px 12px;font-size:13px;margin-top:8px">${err}</div>` : ''}
-    <div class="modal-actions" style="margin-top:16px">
-      <button class="btn-ok" onclick="connectConfig()" style="width:100%">连接并开始</button>
-    </div>
-    <p style="font-size:11px;color:var(--text3);margin-top:12px;text-align:center">在 Google Cloud Console → Service Account → Keys 里下载 JSON 文件，复制 private_key 字段的值粘贴到上方。</p>
-  `, true);
-  // Remove close button for config modal
-  const closeBtn = document.querySelector('#modal .modal-close');
-  if (closeBtn && !localStorage.getItem('gs_private_key')) closeBtn.style.display = 'none';
+  const screen = document.getElementById('config-screen');
+  if (screen) {
+    screen.style.display = 'flex';
+    const ta = document.getElementById('cfg-key');
+    if (ta && savedKey) ta.value = savedKey;
+    const errEl = document.getElementById('cfg-err');
+    if (errEl) errEl.innerHTML = err ? `<div style="color:var(--red);font-size:13px;margin-top:8px">${err}</div>` : '';
+  }
 }
 
 function openConfig() { showConfig(); }
 
-async function connectConfig() {
+function closeConfig() {
+  if (localStorage.getItem('gs_private_key')) {
+    document.getElementById('config-screen').style.display = 'none';
+  }
+}
+
+async function saveConfig() {
   const key = (document.getElementById('cfg-key').value || '').trim();
-  if (!key || !key.includes('PRIVATE KEY')) { showConfig('请粘贴完整的 Private Key（以 -----BEGIN PRIVATE KEY----- 开头）'); return; }
+  const errEl = document.getElementById('cfg-err');
+  if (!key || !key.includes('PRIVATE KEY')) {
+    if (errEl) errEl.innerHTML = '<div style="color:var(--red);font-size:13px;margin-top:8px">请粘贴完整的 Private Key（以 -----BEGIN PRIVATE KEY----- 开头）</div>';
+    return;
+  }
   localStorage.setItem('gs_private_key', key);
   _gsToken = null; _gsTokenExp = 0;
-  closeModal();
+  document.getElementById('config-screen').style.display = 'none';
   await initGS();
+}
+
+async function connectConfig() {
+  await saveConfig();
 }
 
 </script>
