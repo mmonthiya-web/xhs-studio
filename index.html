@@ -34,25 +34,6 @@
   --serif: 'Noto Serif SC', serif;
   --sans: 'Noto Sans SC', sans-serif;
 }
-[data-theme="light"] {
-  --bg: #f5f2ee;
-  --bg2: #ffffff;
-  --bg3: #ede9e3;
-  --border: #ddd8d0;
-  --border2: #c8c0b4;
-  --text: #1a1714;
-  --text2: #5c554c;
-  --text3: #9e958a;
-  --accent: #b5693a;
-  --accent2: #c97d4e;
-  --accent-bg: #f5e8dc;
-  --purple: #6b5ca5;
-  --purple-bg: #ede9f8;
-  --green: #3d7a5a;
-  --green-bg: #dff0e8;
-  --red: #a84040;
-  --red-bg: #fdeaea;
-}
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { font-size: 14px; }
 body { background: var(--bg); color: var(--text); font-family: var(--sans); min-height: 100vh; overflow-x: hidden; }
@@ -309,64 +290,6 @@ a { color: var(--accent); text-decoration: none; }
 
 .ai-step { font-size: 13px; color: var(--text2); padding: 8px 0; display: flex; align-items: center; gap: 6px; }
 
-/* ── Tag filter bar ── */
-.tag-filter-bar {
-  display: flex; align-items: center; gap: 6px; padding: 8px 16px;
-  border-bottom: 1px solid var(--border); background: var(--bg2);
-  flex-shrink: 0; overflow-x: auto; scrollbar-width: none;
-}
-.tag-filter-bar::-webkit-scrollbar { display: none; }
-.tf-chip {
-  flex-shrink: 0; font-size: 11px; padding: 3px 10px; border-radius: 999px;
-  border: 1px solid var(--border2); background: transparent; color: var(--text2);
-  cursor: pointer; transition: all .12s; white-space: nowrap; font-family: var(--mono);
-}
-.tf-chip:hover { border-color: var(--accent); color: var(--accent); }
-.tf-chip.on { background: var(--accent-bg); color: var(--accent); border-color: var(--accent); }
-
-/* ── Batch select ── */
-.card.sel, .trow.sel { border-color: var(--accent) !important; background: var(--accent-bg); }
-.card .sel-box, .trow .sel-box {
-  display: none; position: absolute; top: 7px; left: 7px;
-  width: 18px; height: 18px; border-radius: 4px;
-  border: 1.5px solid var(--border2); background: var(--bg3);
-  z-index: 3; align-items: center; justify-content: center; font-size: 11px;
-}
-.batch-mode .card .sel-box, .batch-mode .trow .sel-box { display: flex; }
-.card.sel .sel-box, .trow.sel .sel-box { background: var(--accent); border-color: var(--accent); color: #1a1008; }
-.batch-bar {
-  display: none; align-items: center; gap: 8px; padding: 8px 16px;
-  background: var(--accent-bg); border-bottom: 1px solid var(--accent);
-  flex-shrink: 0; font-size: 13px; color: var(--accent);
-}
-.batch-bar.show { display: flex; }
-.batch-bar .bc { margin-left: auto; display: flex; gap: 6px; }
-
-/* ── Onboarding ── */
-.onboarding {
-  position: fixed; inset: 0; background: rgba(0,0,0,.88);
-  display: flex; align-items: center; justify-content: center;
-  z-index: 600; padding: 24px; backdrop-filter: blur(4px);
-}
-.ob-card {
-  background: var(--bg2); border: 1px solid var(--border2);
-  border-radius: 12px; width: 100%; max-width: 460px; padding: 28px;
-  animation: obIn .3s ease;
-}
-@keyframes obIn { from { opacity:0; transform:scale(.96); } to { opacity:1; transform:scale(1); } }
-.ob-title { font-family: var(--serif); font-size: 20px; font-weight: 600; margin-bottom: 6px; }
-.ob-sub { font-size: 13px; color: var(--text2); margin-bottom: 22px; line-height: 1.6; }
-.ob-steps { display: flex; flex-direction: column; gap: 14px; margin-bottom: 24px; }
-.ob-step { display: flex; gap: 12px; align-items: flex-start; }
-.ob-num {
-  width: 28px; height: 28px; border-radius: 50%;
-  background: var(--accent); color: #1a1008;
-  font-size: 13px; font-weight: 600; font-family: var(--mono);
-  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-}
-.ob-text { font-size: 13px; color: var(--text); line-height: 1.65; padding-top: 4px; }
-.ob-text small { color: var(--text2); font-size: 12px; display: block; margin-top: 2px; }
-
 /* ── Mobile ── */
 @media (max-width: 640px) {
   .shell { flex-direction: column; height: 100vh; }
@@ -416,6 +339,31 @@ a { color: var(--accent); text-decoration: none; }
 @media (min-width: 641px) {
   .mobile-nav, .mobile-more-menu { display: none !important; }
 }
+
+/* ── Tag filter bar ── */
+.tag-filter-bar { display:flex;align-items:center;gap:6px;padding:8px 16px;border-bottom:1px solid var(--border);background:var(--bg2);flex-shrink:0;overflow-x:auto;scrollbar-width:none; }
+.tag-filter-bar::-webkit-scrollbar { display:none; }
+.tf-chip { flex-shrink:0;font-size:11px;padding:3px 10px;border-radius:999px;border:1px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;transition:all .12s;white-space:nowrap;font-family:var(--mono); }
+.tf-chip:hover { border-color:var(--accent);color:var(--accent); }
+.tf-chip.on { background:var(--accent-bg);color:var(--accent);border-color:var(--accent); }
+/* ── Batch ── */
+.card .sel-box, .trow .sel-box { display:none;position:absolute;top:7px;left:7px;width:18px;height:18px;border-radius:4px;border:1.5px solid var(--border2);background:var(--bg3);z-index:3;align-items:center;justify-content:center;font-size:11px; }
+.batch-mode .card .sel-box, .batch-mode .trow .sel-box { display:flex; }
+.card.sel, .trow.sel { border-color:var(--accent) !important;background:var(--accent-bg); }
+.card.sel .sel-box, .trow.sel .sel-box { background:var(--accent);border-color:var(--accent);color:#1a1008; }
+.batch-bar { display:none;align-items:center;gap:8px;padding:8px 16px;background:var(--accent-bg);border-bottom:1px solid var(--accent);flex-shrink:0;font-size:13px;color:var(--accent); }
+.batch-bar.show { display:flex; }
+.batch-bar .bc { margin-left:auto;display:flex;gap:6px; }
+/* ── Onboarding ── */
+.onboarding { position:fixed;inset:0;background:rgba(0,0,0,.88);display:flex;align-items:center;justify-content:center;z-index:600;padding:24px;backdrop-filter:blur(4px); }
+.ob-card { background:var(--bg2);border:1px solid var(--border2);border-radius:12px;width:100%;max-width:460px;padding:28px; }
+.ob-title { font-family:var(--serif);font-size:20px;font-weight:600;margin-bottom:6px; }
+.ob-sub { font-size:13px;color:var(--text2);margin-bottom:22px;line-height:1.6; }
+.ob-steps { display:flex;flex-direction:column;gap:14px;margin-bottom:24px; }
+.ob-step { display:flex;gap:12px;align-items:flex-start; }
+.ob-num { width:28px;height:28px;border-radius:50%;background:var(--accent);color:#1a1008;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0; }
+.ob-text { font-size:13px;color:var(--text);line-height:1.65;padding-top:4px; }
+.ob-text small { color:var(--text2);font-size:12px;display:block;margin-top:2px; }
 </style>
 </head>
 <body>
@@ -427,14 +375,28 @@ a { color: var(--accent); text-decoration: none; }
     <div class="config-title">内容工作台</div>
     <div class="config-sub">填入 Google Service Account Private Key 开始使用。<br>信息保存在本地，不会上传到任何地方。</div>
     <div class="config-step">Private Key</div>
-    <textarea id="cfg-key" style="min-height:80px;font-size:11px;font-family:var(--mono);width:100%;box-sizing:border-box" placeholder="-----BEGIN PRIVATE KEY-----
-..."></textarea>
+    <textarea id="cfg-key" style="min-height:80px;font-size:11px;font-family:monospace;width:100%;box-sizing:border-box" placeholder="-----BEGIN PRIVATE KEY-----&#10;...&#10;-----END PRIVATE KEY-----"></textarea>
+    <div id="cfg-err"></div>
+    <div style="margin-top:16px">
+      <button class="btn-ok" style="width:100%;padding:10px" onclick="saveConfig()">连接并开始</button>
+    </div>
+    <div style="font-size:11px;color:var(--text3);margin-top:12px;line-height:1.7">
+      在 Google Cloud Console → Service Account → Keys 里下载 JSON，复制 <code style="color:var(--accent)">private_key</code> 字段的值粘贴到上方。
+    </div>
+  </div>
+</div></div>
+    <div class="config-sub">填入你的 Supabase 项目信息开始使用。<br>信息保存在本地，不会上传到任何地方。</div>
+    <div class="config-step">① Supabase Project URL</div>
+    <input type="text" id="cfg-url" placeholder="https://xxxxxxxxxxxx.supabase.co">
+    <div class="config-step">② Supabase Anon Key</div>
+    <input type="text" id="cfg-key" placeholder="eyJhbGciOiJIUzI1NiIs...">
     <div id="cfg-err"></div>
     <div style="margin-top:16px;display:flex;gap:8px">
       <button class="btn-ok" style="flex:1;padding:10px" onclick="saveConfig()">连接并开始</button>
     </div>
     <div style="font-size:11px;color:var(--text3);margin-top:12px;line-height:1.7">
-      在 Google Cloud Console → Service Account → Keys 里下载 JSON，复制 <code style="color:var(--accent)">private_key</code> 字段的值粘贴到上方。
+      在 Supabase Dashboard → Settings → API 里可以找到这两个值。<br>
+      还没建表？先在 SQL Editor 里运行 <code style="color:var(--accent)">schema.sql</code> 文件。
     </div>
   </div>
 </div>
@@ -531,9 +493,9 @@ a { color: var(--accent); text-decoration: none; }
     <div class="ob-sub">三步开始你的小红书选题库，整个流程只需要 2 分钟。</div>
     <div class="ob-steps">
       <div class="ob-step"><div class="ob-num">1</div><div class="ob-text">截取小红书爆款帖子截图<small>保存你觉得有参考价值的帖子图片，或复制帖子链接</small></div></div>
-      <div class="ob-step"><div class="ob-num">2</div><div class="ob-text">把截图发给 Claude，附上分析指令<small>点击「导入」→「一键发给 Claude」自动带上分析提示词</small></div></div>
+      <div class="ob-step"><div class="ob-num">2</div><div class="ob-text">把截图发给 Claude，附上分析指令<small>点击「导入」说「分析这张截图，输出选题库 JSON」</small></div></div>
       <div class="ob-step"><div class="ob-num">3</div><div class="ob-text">把 Claude 返回的 JSON 粘贴进「导入」窗口<small>内容自动分发到灵感、Hooks、标题库等各个模块</small></div></div>
-      <div class="ob-step"><div class="ob-num">4</div><div class="ob-text">点开任意帖子 → 「基于这个帖子创作」<small>AI 帮你生成新选题方向 + 完整创作大纲，一键导出文档</small></div></div>
+      <div class="ob-step"><div class="ob-num">4</div><div class="ob-text">点开任意帖子 → 「基于这个帖子创作」<small>复制提示词发给 Claude，生成完整创作大纲</small></div></div>
     </div>
     <button onclick="closeOnboarding()" style="width:100%;padding:12px;background:var(--accent);color:#1a1008;border:none;border-radius:var(--radius-sm);font-size:14px;font-weight:600;cursor:pointer">开始使用 →</button>
     <div style="text-align:center;margin-top:10px">
@@ -544,6 +506,8 @@ a { color: var(--accent); text-decoration: none; }
   </div>
 </div>
 
+<input type="file" id="hfi" accept="image/*" multiple style="display:none">
+<input type="file" id="bfi" accept=".json" style="display:none">
 <input type="file" id="hfi" accept="image/*" multiple style="display:none">
 <input type="file" id="bfi" accept=".json" style="display:none">
 
@@ -582,154 +546,106 @@ a { color: var(--accent); text-decoration: none; }
 
 <script>
 // ══════════════════════════════════════════
-//  CONFIG
+//  GOOGLE SHEETS CONFIG
 // ══════════════════════════════════════════
-// ── Google Sheets config ──
 const SHEET_ID = '1Zzb8899YdmVlsOQl1qzHzY2EMOAze_wn0e7YsO0s-h8';
 const CLIENT_EMAIL = 'xhs-studio@amiable-might-334005.iam.gserviceaccount.com';
-// Private key stored in localStorage for security (set via config screen)
 const ITEMS_SHEET = 'items';
 const TAGS_SHEET = 'tags';
 
-// ── Google Sheets JWT Auth ──
-let _gsToken = null;
-let _gsTokenExp = 0;
-
-async function getGSToken() {
-  if (_gsToken && Date.now() < _gsTokenExp - 60000) return _gsToken;
-  const privateKey = localStorage.getItem('gs_private_key') || '';
-  if (!privateKey) throw new Error('未配置 Private Key');
-  
-  const now = Math.floor(Date.now() / 1000);
-  const header = { alg: 'RS256', typ: 'JWT' };
-  const payload = {
-    iss: CLIENT_EMAIL,
-    scope: 'https://www.googleapis.com/auth/spreadsheets',
-    aud: 'https://oauth2.googleapis.com/token',
-    exp: now + 3600,
-    iat: now
-  };
-  
-  const b64 = s => btoa(unescape(encodeURIComponent(JSON.stringify(s)))).replace(/=/g,'').replace(/\+/g,'-').replace(/\//g,'_');
-  const unsigned = b64(header) + '.' + b64(payload);
-  
-  // Import private key
-  const pemBody = privateKey.replace(/-----BEGIN PRIVATE KEY-----|-----END PRIVATE KEY-----/g,'').replace(/\s/g,'');
-  const keyData = Uint8Array.from(atob(pemBody), c => c.charCodeAt(0));
-  const cryptoKey = await crypto.subtle.importKey('pkcs8', keyData, { name:'RSASSA-PKCS1-v1_5', hash:'SHA-256' }, false, ['sign']);
-  
-  const sig = await crypto.subtle.sign('RSASSA-PKCS1-v1_5', cryptoKey, new TextEncoder().encode(unsigned));
-  const sigB64 = btoa(String.fromCharCode(...new Uint8Array(sig))).replace(/=/g,'').replace(/\+/g,'-').replace(/\//g,'_');
-  const jwt = unsigned + '.' + sigB64;
-  
-  const res = await fetch('https://oauth2.googleapis.com/token', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: 'grant_type=urn%3Aietf%3Aparams%3Aoauth%3Agrant-type%3Ajwt-bearer&assertion=' + jwt
-  });
-  const data = await res.json();
-  if (!data.access_token) throw new Error(data.error_description || 'Token 获取失败');
-  _gsToken = data.access_token;
-  _gsTokenExp = Date.now() + (data.expires_in || 3600) * 1000;
-  return _gsToken;
-}
-
-async function gsGet(range) {
-  const token = await getGSToken();
-  const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(range)}`;
-  const res = await fetch(url, { headers: { Authorization: 'Bearer ' + token } });
-  const data = await res.json();
-  if (data.error) throw new Error(data.error.message);
-  return data.values || [];
-}
-
-async function gsAppend(sheetName, rows) {
-  const token = await getGSToken();
-  const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(sheetName)}:append?valueInputOption=RAW&insertDataOption=INSERT_ROWS`;
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ values: rows })
-  });
-  const data = await res.json();
-  if (data.error) throw new Error(data.error.message);
-  return data;
-}
-
-async function gsUpdate(range, values) {
-  const token = await getGSToken();
-  const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(range)}?valueInputOption=RAW`;
-  const res = await fetch(url, {
-    method: 'PUT',
-    headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ values })
-  });
-  const data = await res.json();
-  if (data.error) throw new Error(data.error.message);
-  return data;
-}
-
-async function gsBatchUpdate(requests) {
-  const token = await getGSToken();
-  const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}:batchUpdate`;
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ requests })
-  });
-  const data = await res.json();
-  if (data.error) throw new Error(data.error.message);
-  return data;
-}
-
-// ── Column definitions for items sheet ──
+// Column order for items sheet
 const ITEM_COLS = ['id','module','mode','title','note','keywords','hook','emotion','emotion_why',
   'title_pattern','title_why','formula','formula_name','formula_ex','cta','cta_goal','cta_scene',
   'interaction','question','freq','answer','tags','source_id','source_title','img_data','xhs_url','created_at'];
 
 function rowToItem(row) {
   const it = {};
-  ITEM_COLS.forEach((col, i) => {
-    it[col] = row[i] || null;
-  });
+  ITEM_COLS.forEach((col, i) => { it[col] = row[i] || null; });
   if (it.tags && typeof it.tags === 'string') {
-    try { it.tags = JSON.parse(it.tags); } catch { it.tags = it.tags.split(',').map(t => t.trim()).filter(Boolean); }
+    try { it.tags = JSON.parse(it.tags); } catch { it.tags = it.tags.split(',').map(t=>t.trim()).filter(Boolean); }
   } else { it.tags = []; }
   return it;
 }
-
 function itemToRow(it) {
-  return ITEM_COLS.map(col => {
-    if (col === 'tags') return JSON.stringify(it[col] || []);
-    return it[col] != null ? String(it[col]) : '';
-  });
+  return ITEM_COLS.map(col => col === 'tags' ? JSON.stringify(it[col]||[]) : (it[col]!=null ? String(it[col]) : ''));
 }
 
-// Sheet row index cache: id -> rowIndex (1-based, accounting for header)
-let _rowIndex = {};
 
-async function ensureSheetHeaders() {
+// ── Early utils (needed before other functions) ──
+function setModal(html){const m=document.getElementById('modal');if(!m)return;document.getElementById('modal-body').innerHTML=html;m.style.display='flex';}
+function fmtDate(d){return d?new Date(d).toLocaleDateString('zh-CN'):'';}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+
+// ── JWT / Token ──
+let _gsToken = null, _gsTokenExp = 0;
+async function getGSToken() {
+  if (_gsToken && Date.now() < _gsTokenExp - 60000) return _gsToken;
+  const privateKey = localStorage.getItem('gs_private_key') || '';
+  if (!privateKey) throw new Error('未配置 Private Key');
+  const now = Math.floor(Date.now()/1000);
+  const b64url = s => btoa(unescape(encodeURIComponent(JSON.stringify(s)))).replace(/=/g,'').replace(/\+/g,'-').replace(/\//g,'_');
+  const unsigned = b64url({alg:'RS256',typ:'JWT'}) + '.' + b64url({iss:CLIENT_EMAIL,scope:'https://www.googleapis.com/auth/spreadsheets',aud:'https://oauth2.googleapis.com/token',exp:now+3600,iat:now});
+  const pemBody = privateKey.replace(/-----BEGIN PRIVATE KEY-----|-----END PRIVATE KEY-----|\n/g,'');
+  const keyData = Uint8Array.from(atob(pemBody), c => c.charCodeAt(0));
+  const cryptoKey = await crypto.subtle.importKey('pkcs8', keyData, {name:'RSASSA-PKCS1-v1_5',hash:'SHA-256'}, false, ['sign']);
+  const sig = await crypto.subtle.sign('RSASSA-PKCS1-v1_5', cryptoKey, new TextEncoder().encode(unsigned));
+  const sigB64 = btoa(String.fromCharCode(...new Uint8Array(sig))).replace(/=/g,'').replace(/\+/g,'-').replace(/\//g,'_');
+  const res = await fetch('https://oauth2.googleapis.com/token', {method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'grant_type=urn%3Aietf%3Aparams%3Aoauth%3Agrant-type%3Ajwt-bearer&assertion='+unsigned+'.'+sigB64});
+  const data = await res.json();
+  if (!data.access_token) throw new Error(data.error_description || 'Token 获取失败');
+  _gsToken = data.access_token;
+  _gsTokenExp = Date.now() + (data.expires_in||3600)*1000;
+  return _gsToken;
+}
+
+// ── Sheets API helpers ──
+async function gsGet(range) {
+  const token = await getGSToken();
+  const res = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(range)}`, {headers:{Authorization:'Bearer '+token}});
+  const data = await res.json();
+  if (data.error) throw new Error(data.error.message);
+  return data.values || [];
+}
+async function gsAppend(sheet, rows) {
+  const token = await getGSToken();
+  const res = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(sheet)}:append?valueInputOption=RAW&insertDataOption=INSERT_ROWS`, {method:'POST',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify({values:rows})});
+  const data = await res.json();
+  if (data.error) throw new Error(data.error.message);
+}
+async function gsUpdateRow(rowIdx, item) {
+  const token = await getGSToken();
+  const res = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(`${ITEMS_SHEET}!A${rowIdx}`)}?valueInputOption=RAW`, {method:'PUT',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify({values:[itemToRow(item)]})});
+  const data = await res.json();
+  if (data.error) throw new Error(data.error.message);
+}
+async function gsDeleteRow(sheet, rowIdx) {
+  const token = await getGSToken();
+  // Get sheet numeric ID first
+  const meta = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}`, {headers:{Authorization:'Bearer '+token}});
+  const metaData = await meta.json();
+  const sheetObj = (metaData.sheets||[]).find(s=>s.properties.title===sheet);
+  if (!sheetObj) return;
+  const sheetNumId = sheetObj.properties.sheetId;
+  const res = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}:batchUpdate`, {method:'POST',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify({requests:[{deleteDimension:{range:{sheetId:sheetNumId,dimension:'ROWS',startIndex:rowIdx-1,endIndex:rowIdx}}}]})});
+  const data = await res.json();
+  if (data.error) throw new Error(data.error.message);
+}
+async function ensureHeaders() {
   try {
-    const vals = await gsGet(`${ITEMS_SHEET}!A1:Z1`);
-    if (!vals.length || vals[0][0] !== 'id') {
-      await gsUpdate(`${ITEMS_SHEET}!A1`, [ITEM_COLS]);
+    const v = await gsGet(`${ITEMS_SHEET}!A1:Z1`);
+    if (!v.length || v[0][0] !== 'id') {
+      const token = await getGSToken();
+      await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(`${ITEMS_SHEET}!A1`)}?valueInputOption=RAW`, {method:'PUT',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify({values:[ITEM_COLS]})});
     }
-    // tags sheet
-    const tvals = await gsGet(`${TAGS_SHEET}!A1:A1`);
-    if (!tvals.length || tvals[0][0] !== 'name') {
-      await gsUpdate(`${TAGS_SHEET}!A1`, [['name']]);
+    const tv = await gsGet(`${TAGS_SHEET}!A1:A1`);
+    if (!tv.length || tv[0][0] !== 'name') {
+      const token = await getGSToken();
+      await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(`${TAGS_SHEET}!A1`)}?valueInputOption=RAW`, {method:'PUT',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify({values:[['name']]})});
     }
-  } catch(e) {
-    // sheets might not exist yet — will be created on first write
-  }
+  } catch(e) { console.warn('ensureHeaders:', e); }
 }
-const GEMINI_KEY = 'AIzaSyDdQZk1AfdIcDyHw-umawYjWsOZcIJSuro';
-const GEMINI_API = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`;
 
-
-// ══════════════════════════════════════════
-
-let sb = null;
+// ── State ──
 let mode = 'personal';
 let cur = 'all';
 let tags = [];
@@ -737,36 +653,29 @@ let allItems = [];
 let activeTagFilter = null;
 let batchModeOn = false;
 let selectedIds = new Set();
+let _rowIndex = {};
 
-const MODULES = ['inspire','hooks','titles','cta','breakdown','formulas','comments'];
-const LBL = {all:'全部',inspire:'灵感',hooks:'Hooks',titles:'标题库',cta:'CTA',breakdown:'爆款拆解',formulas:'文案公式',comments:'高频问题'};
-const MOD_ICON = {inspire:'💡',hooks:'🪝',titles:'T',cta:'☞',breakdown:'🔬',formulas:'ƒ',comments:'💬'};
+const LBL = { all:'全部', inspire:'灵感', hooks:'Hooks', titles:'标题库', formulas:'文案公式', cta:'CTA', breakdown:'拆解', comments:'高频问题' };
 
-// ── Init ──
 // ── Theme ──
 function toggleTheme() {
   const isLight = document.documentElement.getAttribute('data-theme') === 'light';
-  const next = isLight ? 'dark' : 'light';
-  applyTheme(next);
-  localStorage.setItem('theme', next);
+  applyTheme(isLight ? 'dark' : 'light');
+  localStorage.setItem('theme', isLight ? 'dark' : 'light');
 }
 function applyTheme(t) {
-  if (t === 'light') {
-    document.documentElement.setAttribute('data-theme', 'light');
-  } else {
-    document.documentElement.removeAttribute('data-theme');
-  }
-  const icon = t === 'light' ? '🌙' : '☀️';
-  const label = t === 'light' ? '🌙 切换主题' : '☀️ 切换主题';
+  if (t === 'light') document.documentElement.setAttribute('data-theme','light');
+  else document.documentElement.removeAttribute('data-theme');
+  const icon = t==='light' ? '🌙' : '☀️';
   const btn = document.getElementById('theme-btn');
   const mBtn = document.getElementById('mobile-theme-btn');
   if (btn) btn.textContent = icon;
-  if (mBtn) mBtn.textContent = label;
+  if (mBtn) mBtn.textContent = (t==='light'?'🌙':'☀️') + ' 切换主题';
 }
 
+// ── Init ──
 window.onload = async () => {
-  const savedTheme = localStorage.getItem('theme') || 'dark';
-  applyTheme(savedTheme);
+  applyTheme(localStorage.getItem('theme') || 'dark');
   const privateKey = localStorage.getItem('gs_private_key') || '';
   if (!privateKey) { showConfig(); return; }
   await initGS();
@@ -775,7 +684,7 @@ window.onload = async () => {
 async function initGS() {
   try {
     showLoading(true);
-    await ensureSheetHeaders();
+    await ensureHeaders();
     await loadAll();
   } catch(e) {
     showLoading(false);
@@ -788,9 +697,9 @@ async function loadAll() {
   allItems = itemRows.map(rowToItem).filter(it => it.id);
   allItems.sort((a,b) => (b.created_at||'').localeCompare(a.created_at||''));
   _rowIndex = {};
-  itemRows.forEach((row, i) => { if (row[0]) _rowIndex[row[0]] = i + 2; });
+  itemRows.forEach((row,i) => { if(row[0]) _rowIndex[row[0]] = i+2; });
   const tagRows = await gsGet(`${TAGS_SHEET}!A2:A9999`);
-  tags = tagRows.map(r => r[0]).filter(Boolean);
+  tags = tagRows.map(r=>r[0]).filter(Boolean);
   syncBadges();
   renderTagFilterBar();
   renderView();
@@ -799,34 +708,27 @@ async function loadAll() {
   maybeShowOnboarding();
 }
 
-
-
 // ── Config ──
-function showConfig(err = '') {
+function showConfig(err='') {
   const savedKey = localStorage.getItem('gs_private_key') || '';
   const screen = document.getElementById('config-screen');
   if (screen) {
     screen.style.display = 'flex';
     const ta = document.getElementById('cfg-key');
-    if (ta && savedKey) ta.value = savedKey;
+    if (ta) ta.value = savedKey;
     const errEl = document.getElementById('cfg-err');
     if (errEl) errEl.innerHTML = err ? `<div style="color:var(--red);font-size:13px;margin-top:8px">${err}</div>` : '';
   }
 }
-
 function openConfig() { showConfig(); }
-
 function closeConfig() {
-  if (localStorage.getItem('gs_private_key')) {
-    document.getElementById('config-screen').style.display = 'none';
-  }
+  if (localStorage.getItem('gs_private_key')) document.getElementById('config-screen').style.display = 'none';
 }
-
 async function saveConfig() {
-  const key = (document.getElementById('cfg-key').value || '').trim();
+  const key = (document.getElementById('cfg-key').value||'').trim();
   const errEl = document.getElementById('cfg-err');
   if (!key || !key.includes('PRIVATE KEY')) {
-    if (errEl) errEl.innerHTML = '<div style="color:var(--red);font-size:13px;margin-top:8px">请粘贴完整的 Private Key（以 -----BEGIN PRIVATE KEY----- 开头）</div>';
+    if (errEl) errEl.innerHTML = '<div style="color:var(--red);font-size:13px;margin-top:8px">请粘贴完整的 Private Key</div>';
     return;
   }
   localStorage.setItem('gs_private_key', key);
@@ -835,9 +737,572 @@ async function saveConfig() {
   await initGS();
 }
 
-async function connectConfig() {
-  await saveConfig();
+// ── Nav ──
+function go(m) {
+  cur = m; activeTagFilter = null;
+  document.querySelectorAll('.nav-item').forEach(el=>el.classList.remove('on'));
+  document.getElementById('ni-'+m).classList.add('on');
+  document.getElementById('view-title').textContent = LBL[m];
+  document.getElementById('sq').value = '';
+  renderTagFilterBar();
+  renderView();
 }
+
+function renderTagFilterBar() {
+  const bar = document.getElementById('tag-filter-bar');
+  if (!bar) return;
+  if (!tags.length) { bar.style.display='none'; return; }
+  bar.style.display = 'flex';
+  bar.innerHTML = '<span style="font-size:11px;color:var(--text3);font-family:var(--mono);white-space:nowrap;padding:2px 0">标签：</span>' +
+    tags.map(t=>`<button class="tf-chip${activeTagFilter===t?' on':''}" onclick="setTagFilter('${t.replace(/'/g,"\\'")}')">＃${t}</button>`).join('') +
+    (activeTagFilter ? `<button class="tf-chip" onclick="setTagFilter(null)" style="color:var(--red);border-color:var(--red)">✕ 清除</button>` : '');
+}
+function setTagFilter(t) { activeTagFilter=t; renderTagFilterBar(); renderView(); }
+
+// ── Render ──
+function filteredItems() {
+  return allItems.filter(it => it.mode === mode);
+}
+
+function renderView() {
+  const v = document.getElementById('vw'); if(!v) return;
+  const q = (document.getElementById('sq').value||'').toLowerCase();
+  let items = filteredItems();
+  if (cur !== 'all') items = items.filter(it => it.module === cur);
+  if (q) items = items.filter(it => JSON.stringify(it).toLowerCase().includes(q));
+  if (activeTagFilter) items = items.filter(it => (it.tags||[]).includes(activeTagFilter));
+
+  const hasRealImg = it => it.img_data && !(it.img_data.startsWith('http') && !it.img_data.includes('supabase.co/storage'));
+
+  if (cur === 'all') {
+    const groups = {};
+    items.forEach(it => { const key=it.source_id||it.id; if(!groups[key]) groups[key]=[]; groups[key].push(it); });
+    const reps = Object.values(groups).map(grp =>
+      grp.find(x=>x.img_data&&x.module==='inspire') || grp.find(x=>x.img_data) || grp.find(x=>x.module==='inspire') || grp[0]
+    );
+    const withImg = reps.filter(hasRealImg);
+    const noImg = reps.filter(it=>!hasRealImg(it));
+    let html = '';
+    if (withImg.length) html += `<div class="grid">${withImg.map(it=>renderCard(it,true)).join('')}</div>`;
+    if (noImg.length) html += `<div style="margin-top:${withImg.length?'12px':'0'}">${noImg.map(it=>renderTrow(it,true)).join('')}</div>`;
+    v.innerHTML = html; return;
+  }
+  if (cur === 'formulas') { v.innerHTML = items.map(renderFB).join(''); return; }
+
+  const withImg = items.filter(hasRealImg);
+  const noImg = items.filter(it=>!hasRealImg(it));
+  let html = '';
+  if (withImg.length) html += `<div class="grid">${withImg.map(it=>renderCard(it,false)).join('')}</div>`;
+  if (noImg.length) html += `<div style="margin-top:${withImg.length?'12px':'0'}">${noImg.map(it=>renderTrow(it,false)).join('')}</div>`;
+  v.innerHTML = html;
+}
+
+function syncBadges() {
+  const counts = {};
+  Object.keys(LBL).forEach(k=>counts[k]=0);
+  counts.all = 0;
+  const mItems = filteredItems();
+  mItems.forEach(it => { if(counts[it.module]!==undefined) counts[it.module]++; counts.all++; });
+  Object.keys(counts).forEach(k => {
+    const el = document.getElementById('nb-'+k) || document.getElementById('mb-'+k);
+    if (el) { el.textContent = counts[k]; el.style.display = counts[k]?'flex':'none'; }
+    const el2 = document.getElementById('mb-'+k);
+    if (el2) { el2.textContent = counts[k]; el2.style.display = counts[k]?'flex':'none'; }
+  });
+}
+
+function renderCard(it, isGroup) {
+  const tagHtml = (it.tags||[]).map(t=>`<span class="tag tag-custom">${esc(t)}</span>`).join('');
+  const clickFn = isGroup ? `openGroup('${(it.source_id||it.id).replace(/'/g,"\\'")}')` : `openDet('${it.id}')`;
+  const delFn = isGroup ? `delGroup('${(it.source_id||it.id).replace(/'/g,"\\'")}');renderView()` : `delItem('${it.id}');renderView()`;
+  const isLink = it.img_data && (it.img_data.startsWith('http://') || it.img_data.startsWith('https://')) && !it.img_data.includes('supabase.co/storage');
+  const imgEl = it.img_data && !isLink
+    ? `<img class="card-img" src="${it.img_data}" loading="lazy">`
+    : isLink
+    ? `<div class="card-noimg" style="padding:8px;align-items:stretch;height:auto;min-height:80px">${xhsLinkCard(it.img_data,'')}</div>`
+    : `<div class="card-noimg">📄</div>`;
+  return `<div class="card${selectedIds.has(it.id)?' sel':''}" onclick="${batchModeOn?`toggleSel('${it.id}')`:clickFn}" data-id="${it.id}" style="position:relative">
+    <div class="sel-box">${selectedIds.has(it.id)?'✓':''}</div>
+    <button class="del-btn" onclick="event.stopPropagation();${delFn}" aria-label="删除">✕</button>
+    ${imgEl}
+    <div class="card-body">
+      <div class="card-title">${esc(it.title||'—')}</div>
+      <div class="tags">${tagHtml}</div>
+      <div class="card-date">${fmtDate(it.created_at)}</div>
+    </div>
+  </div>`;
+}
+
+function renderTrow(it, isGroup) {
+  const tagHtml = (it.tags||[]).map(t=>`<span class="tag tag-custom">${esc(t)}</span>`).join('');
+  const clickFn = isGroup ? `openGroup('${(it.source_id||it.id).replace(/'/g,"\\'")}')` : `openDet('${it.id}')`;
+  const delFn = isGroup ? `delGroup('${(it.source_id||it.id).replace(/'/g,"\\'")}');renderView()` : `delItem('${it.id}');renderView()`;
+  const sub = it.note || it.hook || it.formula || it.question || it.cta || '';
+  return `<div class="trow${selectedIds.has(it.id)?' sel':''}" onclick="${batchModeOn?`toggleSel('${it.id}')`:clickFn}" data-id="${it.id}" style="position:relative">
+    <div class="sel-box">${selectedIds.has(it.id)?'✓':''}</div>
+    <button class="del-btn" onclick="event.stopPropagation();${delFn}" aria-label="删除">✕</button>
+    <div class="trow-body">
+      <div class="trow-title">${esc(it.title||it.hook||it.formula_name||it.question||'—')}</div>
+      ${sub?`<div class="trow-sub">${esc(sub)}</div>`:''}
+      <div class="tags" style="margin-top:4px">${tagHtml}</div>
+    </div>
+    <div class="trow-date">${fmtDate(it.created_at)}</div>
+  </div>`;
+}
+
+function renderFB(it) {
+  return `<div class="fb-card" onclick="openDet('${it.id}')">
+    <div class="fb-name">${esc(it.formula_name||'公式')}</div>
+    <div class="fb-formula">${esc(it.formula||'')}</div>
+    ${it.formula_ex?`<div class="fb-ex">${esc(it.formula_ex)}</div>`:''}
+  </div>`;
+}
+
+// ── Open group ──
+function openGroup(sourceId) {
+  const grp = allItems.filter(it=>(it.source_id||it.id)===sourceId && it.mode===mode);
+  if (!grp.length) return;
+  const rep = grp.find(x=>x.module==='inspire') || grp[0];
+  const getField = (mod,field) => { const it=grp.find(x=>x.module===mod); return it?(it[field]||''):''; };
+  const imgs = [...new Set(grp.filter(x=>x.img_data).map(x=>x.img_data))];
+  const imgHtml = imgs.map(src => {
+    const isXhsLink = src.startsWith('http') && !src.includes('supabase.co/storage');
+    if (isXhsLink) return xhsLinkCard(src,'margin-bottom:8px');
+    return `<img src="${src}" style="width:100%;max-height:400px;object-fit:contain;border-radius:var(--radius-sm);margin-bottom:8px;cursor:zoom-in;background:var(--bg3)" onclick="openLightbox('${src.replace(/'/g,"\\'")}')">`;
+  }).join('');
+  const f = [];
+  const add = (label,val) => { if(val) f.push(`<div class="det-row"><div class="det-label">${label}</div><div class="det-val">${esc(val)}</div></div>`); };
+  add('标题',rep.title); add('摘要',getField('inspire','note')); add('关键词',getField('inspire','keywords'));
+  const xhsUrl = grp.map(x=>x.xhs_url).find(Boolean);
+  if (xhsUrl) f.unshift(`<div class="det-row"><div class="det-label">小红书链接</div><div class="det-val"><a href="${xhsUrl}" target="_blank" rel="noopener" style="color:var(--accent);word-break:break-all">${xhsUrl}</a></div></div>`);
+  add('Hook',getField('hooks','hook')); add('情绪触发',getField('hooks','emotion')); add('触发原因',getField('hooks','emotion_why'));
+  add('标题套路',getField('titles','title_pattern')); add('套路分析',getField('titles','title_why'));
+  add('文案公式',getField('formulas','formula')||getField('breakdown','formula'));
+  add('公式示例',getField('formulas','formula_ex'));
+  add('CTA',getField('cta','cta')); add('CTA 目标',getField('cta','cta_goal'));
+  add('互动技巧',getField('breakdown','interaction'));
+  const tagHtml = (rep.tags||[]).map(t=>`<span class="tag tag-custom">${esc(t)}</span>`).join('');
+  window._curGrp = {sourceId,grp,rep,getField};
+  setModal(`
+    <div class="modal-h">${esc(rep.title||'帖子详情')}</div>
+    ${imgHtml}${f.join('')}
+    <div class="tags" style="margin-top:8px">${tagHtml}</div>
+    <div style="font-size:11px;color:var(--text3);margin-top:10px;font-family:var(--mono)">${fmtDate(rep.created_at)}</div>
+    <div id="creation-area"></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="delGroup('${sourceId}');closeModal()">删除</button>
+      <button class="btn-preview" onclick="showCreationPrompt()">✦ 基于这个帖子创作</button>
+      <button class="btn-preview" onclick="openEditGroup('${sourceId}')">✎ 编辑</button>
+      <button class="btn-ok" onclick="closeModal()">关闭</button>
+    </div>
+  `);
+}
+
+function showCreationPrompt() {
+  const {rep,getField} = window._curGrp;
+  const area = document.getElementById('creation-area');
+  if (!area) return;
+  const prompt = buildCreationPrompt(rep,getField);
+  area.innerHTML = `
+    <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border)">
+      <div style="font-size:12px;color:var(--text3);margin-bottom:8px">复制下方提示词 → 发给 Claude → 选一个选题方向 → 让 Claude 生成大纲</div>
+      <div style="background:var(--bg2);border-radius:var(--radius-sm);padding:10px;font-size:11px;color:var(--text2);font-family:var(--mono);line-height:1.7;max-height:160px;overflow-y:auto;white-space:pre-wrap" id="prompt-box">${esc(prompt)}</div>
+      <div style="display:flex;gap:6px;margin-top:8px">
+        <button onclick="copyPrompt()" style="flex:1;padding:8px;background:var(--accent);color:#1a1008;border:none;border-radius:var(--radius-sm);font-size:13px;font-weight:500;cursor:pointer" id="copy-btn">复制提示词</button>
+        <button onclick="exportPromptTxt()" style="flex:1;padding:7px;background:var(--bg2);color:var(--text2);border:1px solid var(--border2);border-radius:var(--radius-sm);font-size:12px;cursor:pointer">⬇ 导出 .txt</button>
+      </div>
+    </div>`;
+}
+function buildCreationPrompt(rep,getField) {
+  return `请根据以下小红书爆款帖子的拆解数据，先给我5个可以套用相同结构的新选题方向，再让我选一个生成完整创作大纲。\n\n【原帖拆解数据】\n标题: ${rep.title||''}\n摘要: ${getField('inspire','note')||''}\n情绪触发: ${getField('hooks','emotion')||''} - ${getField('hooks','emotion_why')||''}\n标题套路: ${getField('titles','title_pattern')||''} - ${getField('titles','title_why')||''}\n文案公式: ${getField('formulas','formula')||getField('breakdown','formula')||''}\nCTA: ${getField('cta','cta')||''} (目标: ${getField('cta','cta_goal')||''})\n互动技巧: ${getField('breakdown','interaction')||''}\n\n【第一步】先输出5个选题方向，每个包含: 方向名称、一句话描述、目标受众。\n【第二步】我选完后，你再生成完整大纲: 3个标题备选 + 开头Hook + 内容结构 + CTA + 创作注意事项。`;
+}
+function copyPrompt() {
+  const {rep,getField} = window._curGrp;
+  navigator.clipboard.writeText(buildCreationPrompt(rep,getField)).then(()=>{
+    const btn=document.getElementById('copy-btn'); if(btn){btn.textContent='✓ 已复制';setTimeout(()=>btn.textContent='复制提示词',2000);}
+  });
+}
+function exportPromptTxt() {
+  const {rep,getField} = window._curGrp;
+  const blob = new Blob([buildCreationPrompt(rep,getField)],{type:'text/plain;charset=utf-8'});
+  const a = document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=(rep.title||'创作大纲').slice(0,20)+'_创作指令.txt'; a.click();
+}
+
+// ── Open single item ──
+function openDet(id) {
+  const it = allItems.find(x=>x.id===id); if(!it) return;
+  const f=[]; const add=(label,val)=>{ if(val) f.push(`<div class="det-row"><div class="det-label">${label}</div><div class="det-val">${esc(val)}</div></div>`); };
+  if (it.xhs_url) f.push(`<div class="det-row"><div class="det-label">小红书链接</div><div class="det-val"><a href="${it.xhs_url}" target="_blank" rel="noopener" style="color:var(--accent);word-break:break-all">${it.xhs_url}</a></div></div>`);
+  add('摘要',it.note); add('关键词',it.keywords); add('Hook',it.hook); add('情绪触发',it.emotion); add('触发原因',it.emotion_why);
+  add('标题套路',it.title_pattern); add('套路分析',it.title_why);
+  add('文案公式',it.formula); add('公式示例',it.formula_ex);
+  add('CTA',it.cta); add('CTA 目标',it.cta_goal); add('互动技巧',it.interaction);
+  add('问题',it.question); add('频率',it.freq); add('回答模板',it.answer);
+  const tagHtml=(it.tags||[]).map(t=>`<span class="tag tag-custom">${esc(t)}</span>`).join('');
+  const modTag=`<span class="tag" style="background:var(--accent-bg);color:var(--accent)">${it.module}</span>`;
+  const imgEl = it.img_data
+    ? ((it.img_data.startsWith('http')&&!it.img_data.includes('supabase.co/storage'))
+        ? xhsLinkCard(it.img_data,'margin-bottom:13px')
+        : `<img class="preview" src="${it.img_data}" style="cursor:zoom-in" onclick="openLightbox('${it.img_data.replace(/'/g,"\\'")}')">`)
+    : '';
+  setModal(`
+    <div class="modal-h">${esc(it.title||it.hook||it.cta||it.formula_name||'详情')} ${modTag}</div>
+    ${imgEl}
+    ${it.formula?`<div class="det-formula">${esc(it.formula)}</div>`:''}
+    ${f.join('')}
+    <div class="tags" style="margin-top:10px">${tagHtml}</div>
+    <div style="font-size:11px;color:var(--text3);margin-top:10px;font-family:var(--mono)">${fmtDate(it.created_at)}</div>
+    <div class="modal-actions">
+      <button class="btn-preview" onclick="openEditItem('${it.id}')">✎ 编辑</button>
+      <button class="btn-ok" onclick="closeModal()">关闭</button>
+    </div>
+  `);
+}
+
+// ── Delete ──
+async function delItem(id) {
+  if (!confirm('确认删除？')) return;
+  showLoading(true);
+  const rowIdx = _rowIndex[id];
+  if (rowIdx) { try { await gsDeleteRow(ITEMS_SHEET,rowIdx); } catch(e){console.error(e);} }
+  allItems = allItems.filter(x=>x.id!==id);
+  delete _rowIndex[id];
+  showLoading(false); syncBadges(); renderView();
+}
+async function delGroup(sourceId) {
+  if (!confirm('确认删除整组？')) return;
+  showLoading(true);
+  const grp = allItems.filter(it=>(it.source_id||it.id)===sourceId&&it.mode===mode);
+  const ids = grp.map(x=>x.id);
+  const rowIndices = ids.map(id=>_rowIndex[id]).filter(Boolean).sort((a,b)=>b-a);
+  for (const rowIdx of rowIndices) { try { await gsDeleteRow(ITEMS_SHEET,rowIdx); } catch(e){console.error(e);} }
+  allItems = allItems.filter(it=>!ids.includes(it.id));
+  ids.forEach(id=>delete _rowIndex[id]);
+  showLoading(false); syncBadges(); renderView();
+}
+
+// ── Edit ──
+function openEditGroup(sourceId) {
+  const grp = allItems.filter(it=>(it.source_id||it.id)===sourceId&&it.mode===mode);
+  if (!grp.length) return;
+  const rep = grp.find(x=>x.module==='inspire')||grp[0];
+  const getField = (mod,field) => { const it=grp.find(x=>x.module===mod); return it?(it[field]||''):''; };
+  const xhsUrl = grp.map(x=>x.xhs_url).find(Boolean)||'';
+  setModal(`
+    <div class="modal-h">✎ 编辑帖子</div>
+    <label class="field-label">小红书链接</label>
+    <input type="text" id="e-xhs" value="${esc(xhsUrl)}" placeholder="https://www.xiaohongshu.com/..." oninput="cleanXhsInput(this)" onpaste="setTimeout(()=>cleanXhsInput(this),0)">
+    <label class="field-label">标题</label><input type="text" id="e-title" value="${esc(rep.title||'')}">
+    <label class="field-label">摘要</label><textarea id="e-note">${esc(getField('inspire','note'))}</textarea>
+    <label class="field-label">关键词</label><input type="text" id="e-keywords" value="${esc(getField('inspire','keywords'))}">
+    <label class="field-label">Hook</label><input type="text" id="e-hook" value="${esc(getField('hooks','hook'))}">
+    <label class="field-label">情绪触发</label><input type="text" id="e-emotion" value="${esc(getField('hooks','emotion'))}">
+    <label class="field-label">触发原因</label><textarea id="e-emotion-why" style="min-height:56px">${esc(getField('hooks','emotion_why'))}</textarea>
+    <label class="field-label">标题套路</label><input type="text" id="e-title-pattern" value="${esc(getField('titles','title_pattern'))}">
+    <label class="field-label">套路分析</label><textarea id="e-title-why" style="min-height:56px">${esc(getField('titles','title_why'))}</textarea>
+    <label class="field-label">文案公式</label><input type="text" id="e-formula" value="${esc(getField('formulas','formula')||getField('breakdown','formula'))}">
+    <label class="field-label">CTA</label><input type="text" id="e-cta" value="${esc(getField('cta','cta'))}">
+    <label class="field-label">CTA 目标</label><input type="text" id="e-cta-goal" value="${esc(getField('cta','cta_goal'))}">
+    <label class="field-label">互动技巧</label><textarea id="e-interaction" style="min-height:56px">${esc(getField('breakdown','interaction'))}</textarea>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="openGroup('${sourceId}')">取消</button>
+      <button class="btn-ok" onclick="saveEditGroup('${sourceId}')">保存</button>
+    </div>
+  `);
+}
+async function saveEditGroup(sourceId) {
+  const grp = allItems.filter(it=>(it.source_id||it.id)===sourceId&&it.mode===mode);
+  if (!grp.length) return;
+  const xhsRaw = document.getElementById('e-xhs').value||'';
+  const xhsMatch = xhsRaw.match(/https?:\/\/[^\s\u300b\]\uff09)"']+/);
+  const xhsUrl = xhsMatch ? xhsMatch[0] : null;
+  const fields = {
+    title: document.getElementById('e-title').value.trim(),
+    note: document.getElementById('e-note').value.trim(),
+    keywords: document.getElementById('e-keywords').value.trim(),
+    hook: document.getElementById('e-hook').value.trim(),
+    emotion: document.getElementById('e-emotion').value.trim(),
+    emotion_why: document.getElementById('e-emotion-why').value.trim(),
+    title_pattern: document.getElementById('e-title-pattern').value.trim(),
+    title_why: document.getElementById('e-title-why').value.trim(),
+    formula: document.getElementById('e-formula').value.trim(),
+    cta: document.getElementById('e-cta').value.trim(),
+    cta_goal: document.getElementById('e-cta-goal').value.trim(),
+    interaction: document.getElementById('e-interaction').value.trim(),
+  };
+  showLoading(true);
+  for (const it of grp) {
+    const patch = {xhs_url: xhsUrl, title: fields.title};
+    if (it.module==='inspire') Object.assign(patch,{note:fields.note,keywords:fields.keywords});
+    if (it.module==='hooks') Object.assign(patch,{hook:fields.hook,emotion:fields.emotion,emotion_why:fields.emotion_why});
+    if (it.module==='titles') Object.assign(patch,{title_pattern:fields.title_pattern,title_why:fields.title_why});
+    if (it.module==='cta') Object.assign(patch,{cta:fields.cta,cta_goal:fields.cta_goal});
+    if (it.module==='breakdown') Object.assign(patch,{note:fields.note,formula:fields.formula,interaction:fields.interaction});
+    if (it.module==='formulas') Object.assign(patch,{formula:fields.formula});
+    const idx = allItems.findIndex(x=>x.id===it.id);
+    if (idx!==-1) { allItems[idx]={...allItems[idx],...patch}; }
+    const rowIdx=_rowIndex[it.id]; if(rowIdx) { try{await gsUpdateRow(rowIdx,allItems[idx]);}catch(e){console.error(e);} }
+  }
+  showLoading(false); openGroup(sourceId);
+}
+function openEditItem(id) {
+  const it = allItems.find(x=>x.id===id); if(!it) return;
+  const fieldMap = {
+    inspire:[['标题','title','input'],['摘要','note','textarea'],['关键词','keywords','input']],
+    hooks:[['Hook','hook','input'],['情绪触发','emotion','input'],['触发原因','emotion_why','textarea']],
+    titles:[['标题','title','input'],['标题套路','title_pattern','input'],['套路分析','title_why','textarea']],
+    cta:[['CTA','cta','input'],['CTA 目标','cta_goal','input'],['适用场景','cta_scene','input']],
+    breakdown:[['标题','title','input'],['摘要','note','textarea'],['文案公式','formula','input'],['互动技巧','interaction','textarea']],
+    formulas:[['公式名称','formula_name','input'],['文案公式','formula','input'],['公式示例','formula_ex','textarea']],
+    comments:[['问题','question','input'],['频率','freq','input'],['回答模板','answer','textarea']],
+  };
+  const rows=(fieldMap[it.module]||[]).map(([label,key,tag])=>
+    `<label class="field-label">${label}</label>`+(tag==='textarea'?`<textarea id="ei-${key}" style="min-height:56px">${esc(it[key]||'')}</textarea>`:`<input type="text" id="ei-${key}" value="${esc(it[key]||'')}">`)
+  ).join('');
+  setModal(`
+    <div class="modal-h">✎ 编辑</div>
+    <label class="field-label">小红书链接</label>
+    <input type="text" id="ei-xhs" value="${esc(it.xhs_url||'')}" placeholder="https://www.xiaohongshu.com/..." oninput="cleanXhsInput(this)" onpaste="setTimeout(()=>cleanXhsInput(this),0)">
+    ${rows}
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="openDet('${it.id}')">取消</button>
+      <button class="btn-ok" onclick="saveEditItem('${it.id}')">保存</button>
+    </div>
+  `);
+}
+async function saveEditItem(id) {
+  const it = allItems.find(x=>x.id===id); if(!it) return;
+  const xhsRaw = document.getElementById('ei-xhs').value||'';
+  const xhsMatch = xhsRaw.match(/https?:\/\/[^\s\u300b\]\uff09)"']+/);
+  const patch = {xhs_url: xhsMatch?xhsMatch[0]:null};
+  document.querySelectorAll('[id^="ei-"]').forEach(el=>{ if(el.id!=='ei-xhs') patch[el.id.replace('ei-','')]=el.value.trim(); });
+  const idx=allItems.findIndex(x=>x.id===id);
+  if(idx!==-1) { allItems[idx]={...allItems[idx],...patch}; }
+  const rowIdx=_rowIndex[id]; if(rowIdx){try{await gsUpdateRow(rowIdx,allItems[idx]);}catch(e){console.error(e);}}
+  openDet(id);
+}
+
+// ── Import ──
+function openImport() {
+  window._iImgs = []; window._iObj = null;
+  setModal(`
+    <div class="modal-h">✦ 导入分析结果</div>
+    <div style="background:var(--accent-bg);border:1px solid var(--accent);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:14px;font-size:13px;color:var(--text)">
+      <div style="font-weight:600;color:var(--accent);margin-bottom:6px">使用方式</div>
+      <div>① 把小红书帖子截图发给 Claude</div>
+      <div>② 说「分析这张截图，输出选题库 JSON」</div>
+      <div>③ 复制 JSON 粘贴到下方，确认保存</div>
+    </div>
+    <label class="field-label">小红书帖子链接（可与图片同时使用）</label>
+    <input type="text" id="xhs-link" placeholder="https://www.xiaohongshu.com/explore/..." style="margin-bottom:4px" oninput="cleanXhsInput(this)" onpaste="setTimeout(()=>cleanXhsInput(this),0)">
+    <div style="font-size:11px;color:var(--text3);margin-bottom:10px">粘贴分享文字即可，自动提取链接，与截图互不影响</div>
+    <div class="img-drop" id="idz" onclick="document.getElementById('hfi').click()">
+      <span class="di">🖼</span>
+      <span>可选：上传截图存档（支持多张）</span><br>
+      <small style="font-size:11px;color:var(--text3)">点击或拖拽，可连续添加</small>
+    </div>
+    <div id="img-preview-grid" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px"></div>
+    <label class="field-label">粘贴 JSON 分析结果</label>
+    <textarea id="jin" placeholder='{"title":"...","hook":"...",...}' style="min-height:120px"></textarea>
+    <div id="jerr"></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">取消</button>
+      <button class="btn-preview" id="dosave" onclick="tryParse()" disabled>预览</button>
+      <button class="btn-ok" id="dosave2" onclick="doSave()" style="display:none">确认保存</button>
+    </div>
+  `);
+  document.getElementById('jin').addEventListener('input',()=>{ document.getElementById('dosave').disabled=false; });
+  setupImgDrop();
+}
+
+function cleanXhsInput(el) {
+  const val = el.value||'';
+  const match = val.match(/https?:\/\/[^\s\u300b\]\uff09)"']+/);
+  if (match && match[0] !== val.trim()) el.value = match[0];
+}
+
+function setupImgDrop() {
+  const dz = document.getElementById('idz'); if(!dz) return;
+  dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('drag-over');});
+  dz.addEventListener('dragleave',()=>dz.classList.remove('drag-over'));
+  dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('drag-over');handleImgFiles(e.dataTransfer.files);});
+  document.getElementById('hfi').onchange = e => handleImgFiles(e.target.files);
+}
+
+async function handleImgFiles(files) {
+  for (const file of files) {
+    if (!file.type.startsWith('image/')) continue;
+    const b64 = await new Promise(res=>{const r=new FileReader();r.onload=e=>res(e.target.result);r.readAsDataURL(file);});
+    window._iImgs.push(b64);
+    const grid = document.getElementById('img-preview-grid');
+    if (grid) {
+      const wrap = document.createElement('div'); wrap.style.cssText='position:relative;display:inline-block';
+      const img = document.createElement('img'); img.src=b64; img.style.cssText='width:80px;height:80px;object-fit:cover;border-radius:4px';
+      const rm = document.createElement('button'); rm.textContent='✕'; rm.style.cssText='position:absolute;top:-4px;right:-4px;background:var(--red);color:#fff;border:none;border-radius:50%;width:16px;height:16px;font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0';
+      const idx=window._iImgs.length-1; rm.onclick=()=>{window._iImgs.splice(idx,1);wrap.remove();};
+      wrap.append(img,rm); grid.append(wrap);
+    }
+  }
+}
+
+function tryParse() {
+  const raw=(document.getElementById('jin').value||'').trim();
+  const pe=document.getElementById('jerr'),sb2=document.getElementById('dosave2');
+  if(!raw){pe.innerHTML='<div class="err">请粘贴 JSON 内容</div>';return;}
+  try {
+    let s=raw.replace(/[\u201C\u201D\u300C\u300D]/g,'"').replace(/[\u2018\u2019]/g,"'").replace(/\uff1a/g,':').replace(/\uff0c/g,',');
+    s=s.replace(/^```(?:json)?\s*/,'').replace(/\s*```$/,'').trim();
+    if(!s.startsWith('{')){const st=s.indexOf('{'),en=s.lastIndexOf('}');if(st!==-1&&en!==-1)s=s.slice(st,en+1);}
+    const o=JSON.parse(s);
+    window._iObj=o;
+    pe.innerHTML='<div style="color:var(--green);font-size:13px;margin-top:8px">✓ JSON 解析成功，可以保存</div>';
+    if(sb2)sb2.style.display='inline-flex';
+  } catch(e) {
+    pe.innerHTML=`<div class="err">JSON 解析失败：${e.message}</div>`;
+    if(sb2)sb2.style.display='none';
+  }
+}
+
+async function doSave() {
+  const o=window._iObj; if(!o) return;
+  const imgs=(window._iImgs||[]).filter(Boolean);
+  const firstImg=imgs[0]||null;
+  const xhsRaw=(document.getElementById('xhs-link')&&document.getElementById('xhs-link').value)||'';
+  const xhsMatch=xhsRaw.match(/https?:\/\/[^\s\u300b\]\uff09)"']+/);
+  const xhsLink=xhsMatch?xhsMatch[0]:null;
+  if(xhsLink&&document.getElementById('xhs-link'))document.getElementById('xhs-link').value=xhsLink;
+  const bt=o.tags||[];
+  const sourceId='src_'+Date.now();
+  const base={mode,tags:bt,source_id:sourceId,...(firstImg?{img_data:firstImg}:{}),...(xhsLink?{xhs_url:xhsLink}:{})};
+  const now=new Date().toISOString();
+  const rows=[
+    {...base,id:'ins_'+Date.now(),module:'inspire',title:o.title||'',note:o.summary||o.note||'',keywords:o.keywords||'',created_at:now},
+    {...base,id:'hk_'+Date.now(),module:'hooks',title:o.title||'',hook:o.hook||'',emotion:o.emotion||'',emotion_why:o.emotionWhy||o.emotion_why||'',created_at:now},
+    {...base,id:'ti_'+Date.now(),module:'titles',title:o.title||'',title_pattern:o.titlePattern||o.title_pattern||'',title_why:o.titleWhy||o.title_why||'',created_at:now},
+    {...base,id:'fm_'+Date.now(),module:'formulas',formula:o.formula||'',formula_name:o.formulaName||o.formula_name||'',formula_ex:o.formulaEx||o.formula_ex||'',created_at:now},
+    {...base,id:'ct_'+Date.now(),module:'cta',cta:o.cta||'',cta_goal:o.ctaGoal||o.cta_goal||'',cta_scene:o.ctaScene||o.cta_scene||'',created_at:now},
+    {...base,id:'bd_'+Date.now(),module:'breakdown',title:o.title||'',note:o.summary||o.note||'',formula:o.formula||'',interaction:o.interaction||'',created_at:now},
+  ].filter(r=>r.title||r.hook||r.formula||r.cta||r.question);
+  showLoading(true);
+  try {
+    await ensureHeaders();
+    await gsAppend(ITEMS_SHEET, rows.map(itemToRow));
+    await loadAll();
+    closeModal();
+  } catch(e) { showLoading(false); alert('保存失败：'+e.message); }
+}
+
+// ── Add comment ──
+function openAddComment() {
+  setModal(`
+    <div class="modal-h">💬 添加高频问题</div>
+    <label class="field-label">问题</label><input type="text" id="cq" placeholder="评论区高频出现的问题">
+    <label class="field-label">频率</label><input type="text" id="cf" placeholder="高/中/低 或 次数">
+    <label class="field-label">回答模板</label><textarea id="ca" placeholder="可复用的回答模板"></textarea>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">取消</button>
+      <button class="btn-ok" onclick="addComment()">保存</button>
+    </div>
+  `);
+}
+async function addComment() {
+  const q=(document.getElementById('cq').value||'').trim();
+  const f=(document.getElementById('cf').value||'').trim();
+  const a=(document.getElementById('ca').value||'').trim();
+  if(!q){alert('请填写问题');return;}
+  showLoading(true);
+  try {
+    const newItem={id:'cmt_'+Date.now(),module:'comments',mode,question:q,freq:f,answer:a,tags:[],created_at:new Date().toISOString()};
+    await ensureHeaders();
+    await gsAppend(ITEMS_SHEET,[itemToRow(newItem)]);
+    await loadAll(); closeModal();
+  } catch(e){showLoading(false);alert('保存失败：'+e.message);}
+}
+
+// ── Tag manager ──
+function openTagMgr() {
+  const list=tags.map(t=>`<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border)"><span class="tag tag-custom">${esc(t)}</span><button onclick="delTag('${t.replace(/'/g,"\\'")}');openTagMgr()" style="margin-left:auto;background:none;border:none;color:var(--text3);cursor:pointer;font-size:13px">✕</button></div>`).join('');
+  setModal(`
+    <div class="modal-h">🏷 管理标签</div>
+    <div style="margin-bottom:12px">${list||'<div style="color:var(--text3);font-size:13px">暂无标签</div>'}</div>
+    <div style="display:flex;gap:6px">
+      <input type="text" id="new-tag" placeholder="新标签名称" style="flex:1">
+      <button class="btn-ok" onclick="addTag()">添加</button>
+    </div>
+    <div class="modal-actions"><button class="btn-ok" onclick="closeModal()">完成</button></div>
+  `);
+}
+async function delTag(name) {
+  showLoading(true);
+  try {
+    const tagRows=await gsGet(`${TAGS_SHEET}!A1:A9999`);
+    const rowIdx=tagRows.findIndex(r=>r[0]===name);
+    if(rowIdx>=0){await gsDeleteRow(TAGS_SHEET,rowIdx+1);}
+    tags=tags.filter(t=>t!==name);
+  } catch(e){console.error(e);}
+  showLoading(false); renderTagFilterBar(); renderView();
+}
+async function addTag() {
+  const v=(document.getElementById('new-tag').value||'').trim();
+  if(!v||tags.includes(v)){return;}
+  showLoading(true);
+  try {
+    await ensureHeaders();
+    await gsAppend(TAGS_SHEET,[[v]]);
+    tags.push(v);
+  } catch(e){alert('添加失败：'+e.message);}
+  showLoading(false); openTagMgr();
+}
+
+// ── Batch mode ──
+function toggleBatchMode() {
+  batchModeOn=!batchModeOn; selectedIds.clear();
+  const vw=document.getElementById('vw');
+  if(batchModeOn)vw.classList.add('batch-mode'); else vw.classList.remove('batch-mode');
+  document.getElementById('batch-bar').classList.toggle('show',batchModeOn);
+  const btn=document.getElementById('batch-toggle-btn');
+  if(btn){btn.style.background=batchModeOn?'var(--accent-bg)':'var(--bg3)';btn.style.color=batchModeOn?'var(--accent)':'var(--text2)';}
+  updateBatchCount(); renderView();
+}
+function toggleSel(id){if(selectedIds.has(id))selectedIds.delete(id);else selectedIds.add(id);updateBatchCount();renderView();}
+function updateBatchCount(){const el=document.getElementById('batch-count');if(el)el.textContent='已选 '+selectedIds.size+' 项';}
+function selectAll(){
+  let items=filteredItems();
+  if(cur!=='all')items=items.filter(it=>it.module===cur);
+  const q=(document.getElementById('sq').value||'').toLowerCase();
+  if(q)items=items.filter(it=>JSON.stringify(it).toLowerCase().includes(q));
+  if(activeTagFilter)items=items.filter(it=>(it.tags||[]).includes(activeTagFilter));
+  items.forEach(it=>selectedIds.add(it.id)); updateBatchCount(); renderView();
+}
+async function batchDelete(){
+  if(!selectedIds.size){alert('请先选择要删除的内容');return;}
+  if(!confirm(`确认删除选中的 ${selectedIds.size} 条内容？`))return;
+  showLoading(true);
+  const ids=[...selectedIds];
+  const rowIndices=ids.map(id=>_rowIndex[id]).filter(Boolean).sort((a,b)=>b-a);
+  for(const rowIdx of rowIndices){try{await gsDeleteRow(ITEMS_SHEET,rowIdx);}catch(e){console.error(e);}}
+  allItems=allItems.filter(x=>!selectedIds.has(x.id));
+  ids.forEach(id=>delete _rowIndex[id]);
+  selectedIds.clear(); showLoading(false); toggleBatchMode(); syncBadges(); renderView();
+}
+
+// ── Onboarding ──
+function maybeShowOnboarding(){if(localStorage.getItem('ob_done'))return;document.getElementById('onboarding').style.display='flex';}
+function closeOnboarding(){if(document.getElementById('ob-no-show').checked)localStorage.setItem('ob_done','1');document.getElementById('onboarding').style.display='none';}
+
+// ── XHS Link helpers ──
+function parseXhsLink(url){try{const u=new URL(url);const parts=u.pathname.split('/').filter(Boolean);const itemIdx=parts.indexOf('item');const postId=itemIdx>=0?parts[itemIdx+1]:(parts[parts.length-1]||'');return{shortId:postId?postId.slice(-8):''}}catch{return{shortId:''}}}
+function xhsLinkCard(url,extraStyle){const{shortId}=parseXhsLink(url);const label=shortId?'ID: ...'+shortId:'xiaohongshu.com';return '<a href="'+url+'" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:10px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;text-decoration:none;color:var(--text);'+( extraStyle||'')+'">'+'<span style="width:32px;height:32px;background:#ff2442;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:14px;font-weight:700;color:#fff;font-family:serif">\u5c0f</span>'+'<div style="min-width:0;flex:1"><div style="font-size:12px;font-weight:500;color:var(--text);margin-bottom:1px">\u5c0f\u7ea2\u4e66\u539f\u5e16</div><div style="font-size:11px;color:var(--text3);font-family:var(--mono)">'+label+'</div></div>'+'<span style="font-size:11px;color:var(--accent);flex-shrink:0">\u6253\u5f00 \u2197</span></a>';}
+
+// ── Utils ──
+function openLightbox(src){const lb=document.createElement('div');lb.className='lightbox';lb.innerHTML=`<img src="${src}">`;lb.onclick=()=>lb.remove();document.body.appendChild(lb);}
+function fmtDate(d){return d?new Date(d).toLocaleDateString('zh-CN'):'';}
+function copyAnswer(text){navigator.clipboard.writeText(text).catch(()=>{});}
+
+// ── Mobile nav ──
+function goMobile(m){go(m);document.querySelectorAll('.mobile-nav-item').forEach(el=>el.classList.remove('on'));const el=document.getElementById('mni-'+m);if(el)el.classList.add('on');else document.getElementById('mni-more').classList.add('on');}
+function toggleMoreMenu(){const menu=document.getElementById('mobile-more-menu');if(menu)menu.style.display=menu.style.display==='none'?'grid':'none';}
+document.addEventListener('click',e=>{const menu=document.getElementById('mobile-more-menu');const btn=document.getElementById('mni-more');if(menu&&btn&&!menu.contains(e.target)&&!btn.contains(e.target))menu.style.display='none';});
 
 </script>
 </body>
