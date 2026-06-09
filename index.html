@@ -743,6 +743,27 @@ const LBL = {all:'全部',inspire:'灵感',hooks:'Hooks',titles:'标题库',cta:
 const MOD_ICON = {inspire:'💡',hooks:'🪝',titles:'T',cta:'☞',breakdown:'🔬',formulas:'ƒ',comments:'💬'};
 
 // ── Init ──
+// ── Theme ──
+function toggleTheme() {
+  const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+  const next = isLight ? 'dark' : 'light';
+  applyTheme(next);
+  localStorage.setItem('theme', next);
+}
+function applyTheme(t) {
+  if (t === 'light') {
+    document.documentElement.setAttribute('data-theme', 'light');
+  } else {
+    document.documentElement.removeAttribute('data-theme');
+  }
+  const icon = t === 'light' ? '🌙' : '☀️';
+  const label = t === 'light' ? '🌙 切换主题' : '☀️ 切换主题';
+  const btn = document.getElementById('theme-btn');
+  const mBtn = document.getElementById('mobile-theme-btn');
+  if (btn) btn.textContent = icon;
+  if (mBtn) mBtn.textContent = label;
+}
+
 window.onload = async () => {
   const savedTheme = localStorage.getItem('theme') || 'dark';
   applyTheme(savedTheme);
